@@ -10,26 +10,17 @@ Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018 K4YT3X
 """
+import argparse
 import avalon_framework as avalon
 import re
 import readline
 import subprocess
+import traceback
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 PEERS = []
 CONFIG_OUTPUT = '/tmp/wireguard'
-
-
-class GlobalSettings:
-    """ Global settings holder
-
-    An object of this class will hold all the
-    global settings.
-    """
-
-    def __init__(self):
-        self.preshared_key = False
 
 
 class Peer:
@@ -82,6 +73,23 @@ class WireGuard:
         return output.decode().replace('\n', '')
 
 
+def process_arguments():
+    """This function parses all arguments
+    """
+    parser = argparse.ArgumentParser()
+    control_group = parser.add_argument_group('Controls')
+    control_group.add_argument('-v', "--verbose", help='Display debug output (TODO)', action="store_true", default=False)
+    etc_group = parser.add_argument_group('Extra')
+    etc_group.add_argument('-V', '--version', help='Display version and legal information and exit', action="store_true", default=False)
+    return parser.parse_args()
+
+
+def print_welcome():
+    print('WireGuard Mesh Configurator {}'.format(VERSION))
+    print('(C) 2018 K4YT3X')
+    print('Licensed under GNU GPL v3')
+
+
 def enroll_peer():
     """ Enroll a new peer
     """
@@ -119,6 +127,12 @@ def enroll_peer():
 
 
 def gen_configs():
+    """ Generate configuration file for every peer
+
+    This function reads the PEERS list, generates a
+    configuration file for every peer, and export into
+    the CONFIG_OUTPUT directory.
+    """
     if len(PEERS) == 0:
         avalon.warning('No peers configured, exiting')
         exit(0)
@@ -128,7 +142,7 @@ def gen_configs():
     avalon.info('Generating configuration files')
 
     for peer in PEERS:
-
+        avalon.dbgInfo('Generating configuration file for {}'.format(peer.address))
         with open('{}/{}.conf'.format(CONFIG_OUTPUT, peer.address.split('/')[0]), 'w') as config:
 
             # Write Interface config
@@ -163,11 +177,35 @@ def get_peers_settings():
 
 
 if __name__ == '__main__':
-    # Create object for wireguard binary handler
-    wg = WireGuard()
+    try:
+        # Print welcome message
+        print_welcome()
 
-    # Start addding peers
-    get_peers_settings()
+        # Parse command line arguments
+        args = process_arguments()
 
-    # Generate configuration files
-    gen_configs()
+        # Display version and legal information (--version)
+        if args.version:  # prints program legal / dev / version info
+            print("Current Version: " + VERSION)
+            print("Author: K4YT3X")
+            print("License: GNU GPL v3")
+            print("Github Page: https://github.com/K4YT3X/wireguard-mesh-configurator")
+            print("Contact: k4yt3x@k4yt3x.com\n")
+            exit(0)
+
+        # Create object for wireguard binary handler
+        wg = WireGuard()
+
+        # Start addding peers
+        get_peers_settings()
+
+        # Generate configuration files
+        gen_configs()
+    except KeyboardInterrupt:
+        print()
+        avalon.warning('Keyboard interruption caught, exiting')
+        exit(1)
+    except Exception:
+        avalon.error('Exception caught')
+        traceback.print_exc()
+        exit(1)
