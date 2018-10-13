@@ -1,8 +1,9 @@
 # WireGuard Mesh Configurator
 
-## 1.0.0 (October 13, 2018)
+## 1.0.1 (October 13, 2018)
 
-1. Added basic mesh network configuring functionalities.
+1. Enhanced CLI
+1. Added legal information
 
 ## Introduction
 
