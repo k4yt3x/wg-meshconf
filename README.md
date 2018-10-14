@@ -1,9 +1,10 @@
 # WireGuard Mesh Configurator
 
-## 1.0.1 (October 13, 2018)
+## 1.1.0 (October 14, 2018)
 
-1. Enhanced CLI
-1. Added legal information
+1. Changed interface to interactive shell
+1. Added save / load profile function
+1. Some other minor improvements
 
 ## Introduction
 
@@ -11,8 +12,11 @@ WireGuard mesh configurator is a tool that will help you generating peer configu
 
 ## Gallery
 
-![configurating](https://user-images.githubusercontent.com/21986859/46910822-4dba7f00-cf19-11e8-84c6-f354a7281925.png)
-*Configuring a mesh network*
+![new_profile](https://user-images.githubusercontent.com/21986859/46922682-bb7aaf80-cfda-11e8-812e-b2458009302a.png)
+*Creating a new mesh profile*
+
+![save_load](https://user-images.githubusercontent.com/21986859/46922686-c9303500-cfda-11e8-9685-062a8a24ed27.png)
+*Saving and Loading Profiles*
 
 ![generated_configs](https://user-images.githubusercontent.com/21986859/46910818-46937100-cf19-11e8-9ea3-965019293a5c.png)
 *Generated configuration files*
