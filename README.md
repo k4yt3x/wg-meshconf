@@ -18,7 +18,7 @@ WireGuard mesh configurator is a tool that will help you generating peer configu
 ![save_load](https://user-images.githubusercontent.com/21986859/46922686-c9303500-cfda-11e8-9685-062a8a24ed27.png)
 *Saving and Loading Profiles*
 
-![generated_configs](https://user-images.githubusercontent.com/21986859/46910818-46937100-cf19-11e8-9ea3-965019293a5c.png)
+![generated_configs](https://user-images.githubusercontent.com/21986859/46964450-17464680-d076-11e8-9306-bfe69a88c858.png)
 *Generated configuration files*
 
 ## Usages
