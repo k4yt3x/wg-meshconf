@@ -19,8 +19,7 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.1'
-CONFIG_OUTPUT = '/tmp/wireguard'
+VERSION = '1.1.2'
 COMMANDS = [
     'ShowPeers',
     'LoadProfile',
@@ -102,7 +101,7 @@ class WireGuard:
 
 
 class ProfileManager(object):
-    """ Profile manaager
+    """ Profile manager
     """
 
     def __init__(self):
@@ -129,7 +128,6 @@ class ProfileManager(object):
     def save_profile(self, profile_path):
         """ Save current profile to a json file
         """
-        avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
 
         # Convert peer objects into dictionary format
         profile = {}
@@ -142,6 +140,16 @@ class ProfileManager(object):
             profile['peers'][peer.address]['private_key'] = peer.private_key
             profile['peers'][peer.address]['keep_alive'] = peer.keep_alive
 
+        if os.path.isfile(profile_path) or os.path.islink(profile_path):
+            if not avalon.ask('File already exists. Overwrite?', True):
+                avalon.warning('Aborted saving profile')
+                return 1
+        if os.path.isdir(profile_path):
+            avalon.warning('Destination path is a directory')
+            avalon.warning('Aborted saving profile')
+            return 1
+
+        avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
         with open(profile_path, 'w') as wgc_config:
             json.dump(profile, wgc_config, indent=2)
             wgc_config.close()
@@ -174,7 +182,7 @@ def print_peer_config(peer):
         print('Listen Port: {}'.format(peer.listen_port))
     print('Private Key: {}'.format(peer.private_key))
     if peer.keep_alive:
-        print('Keepalive: {}'.format(peer.keep_alive))
+        print('Keep Alive: {}'.format(peer.keep_alive))
     # print('Preshared Key: {}'.format(peer.preshared_key))
 
 
@@ -242,15 +250,26 @@ def generate_configs(output_path):
 
     avalon.info('Generating configuration files')
 
-    if not os.path.isdir(output_path):
-        if not os.path.isfile(output_path) and not os.path.islink(output_path):
-            os.mkdir(output_path)
+    # Abort is destination is a file / link
+    if os.path.isfile(output_path) or os.path.islink(output_path):
+        avalon.warning('Destination path is a file / link')
+        avalon.warning('Aborting configuration generation')
+        return 1
 
+    # Ask if user wants to create the output directory if it doesn't exist
+    if not os.path.isdir(output_path):
+        if avalon.ask('Output directory doesn\'t exist. Create output directory?', True):
+            os.mkdir(output_path)
+        else:
+            avalon('Aborting configuration generation')
+            return 1
+
+    # Iterate through all peers and generate configuration for each peer
     for peer in pm.peers:
         avalon.dbgInfo('Generating configuration file for {}'.format(peer.address))
         with open('{}/{}.conf'.format(output_path, peer.address.split('/')[0]), 'w') as config:
 
-            # Write Interface config
+            # Write Interface configuration
             config.write('[Interface]\n')
             config.write('PrivateKey = {}\n'.format(peer.private_key))
             if peer.address != '':
@@ -349,7 +368,7 @@ def command_interpreter(commands):
 
 def main():
     """ WireGuard Mesh Configurator main function
-    This funciton controls the main flow of this program.
+    This function controls the main flow of this program.
     """
 
     try:
@@ -388,7 +407,7 @@ def main():
 
 
 if __name__ == '__main__':
-    # Create global object for wireguard handler
+    # Create global object for WireGuard handler
     wg = WireGuard()
 
     # Create global object for profile manager
