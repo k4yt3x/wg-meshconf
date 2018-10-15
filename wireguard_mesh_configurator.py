@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: October 14, 2018
+Last Modified: October 15, 2018
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
