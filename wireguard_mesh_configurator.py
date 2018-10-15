@@ -19,12 +19,14 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 CONFIG_OUTPUT = '/tmp/wireguard'
 COMMANDS = [
+    'ShowPeers',
     'LoadProfile',
     'SaveProfile',
     'NewProfile',
+    'AddPeers',
     'GenerateConfigs',
     'Exit',
     'Quit',
@@ -55,11 +57,12 @@ class Peer:
     the wireguard mesh network.
     """
 
-    def __init__(self, address, private_key, keep_alive, listen_port, preshared_key=False):
+    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=False):
         self.address = address
+        self.public_address = public_address
+        self.listen_port = listen_port
         self.private_key = private_key
         self.keep_alive = keep_alive
-        self.listen_port = listen_port
         self.preshared_key = preshared_key
 
 
@@ -117,10 +120,11 @@ class ProfileManager(object):
 
         for peer in profile['peers']:
             address = profile['peers'][peer]['address']
+            public_address = profile['peers'][peer]['public_address']
+            listen_port = profile['peers'][peer]['listen_port']
             private_key = profile['peers'][peer]['private_key']
             keep_alive = profile['peers'][peer]['keep_alive']
-            listen_port = profile['peers'][peer]['listen_port']
-            pm.peers.append(Peer(address, private_key, keep_alive, listen_port))
+            pm.peers.append(Peer(address, public_address, listen_port, private_key, keep_alive))
 
     def save_profile(self, profile_path):
         """ Save current profile to a json file
@@ -133,9 +137,10 @@ class ProfileManager(object):
         for peer in pm.peers:
             profile['peers'][peer.address] = {}
             profile['peers'][peer.address]['address'] = peer.address
+            profile['peers'][peer.address]['public_address'] = peer.public_address
+            profile['peers'][peer.address]['listen_port'] = peer.listen_port
             profile['peers'][peer.address]['private_key'] = peer.private_key
             profile['peers'][peer.address]['keep_alive'] = peer.keep_alive
-            profile['peers'][peer.address]['listen_port'] = peer.listen_port
 
         with open(profile_path, 'w') as wgc_config:
             json.dump(profile, wgc_config, indent=2)
@@ -147,6 +152,11 @@ class ProfileManager(object):
         self.peers = []
         get_peers_settings()
 
+    def add_peers(self):
+        """ Add new peers into the profile
+        """
+        get_peers_settings()
+
 
 def print_welcome():
     print('WireGuard Mesh Configurator {}'.format(VERSION))
@@ -154,9 +164,25 @@ def print_welcome():
     print('Licensed under GNU GPL v3')
 
 
+def print_peer_config(peer):
+    avalon.info('Peer {} information summary:'.format(peer.address))
+    if peer.address:
+        print('Address: {}'.format(peer.address))
+    if peer.public_address:
+        print('Public Address: {}'.format(peer.public_address))
+    if peer.listen_port:
+        print('Listen Port: {}'.format(peer.listen_port))
+    print('Private Key: {}'.format(peer.private_key))
+    if peer.keep_alive:
+        print('Keepalive: {}'.format(peer.keep_alive))
+    # print('Preshared Key: {}'.format(peer.preshared_key))
+
+
 def enroll_peer():
     """ Enroll a new peer
     """
+
+    # Get peer tunnel address
     while True:
         address = avalon.gets('Address (leave empty if client only): ')
         result = re.match('^(?:\d{1,3}\.){3}\d{1,3}/{1}(?:\d\d?)?$', address)
@@ -166,11 +192,28 @@ def enroll_peer():
             continue
         break
 
+    # Get peer public IP address
+    while True:
+        public_address = avalon.gets('Public address (leave empty if client only): ')
+        result = re.match('^(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?$', public_address)
+        if result is None and public_address != '':  # field not required
+            avalon.error('Invalid IP address entered')
+            continue
+        break
+
+    # Get peer listening port
+    listen_port = avalon.gets('Listen port (leave empty for client): ')
+
+    # Get peer private key
     private_key = avalon.gets('Private key (leave empty for auto generation): ')
     if private_key == '':
         private_key = wg.genkey()
+
+    # Ask if this peer needs to be actively connected
+    # if peer is behind NAT and needs to be accessed actively
+    # PersistentKeepalive must be turned on (!= 0)
     keep_alive = avalon.ask('Keep alive?', False)
-    listen_port = avalon.gets('Listen port (leave empty for client): ')
+
     """
     preshared_key = False
     if avalon.ask('Use a preshared key?', True):
@@ -179,15 +222,9 @@ def enroll_peer():
             preshared_key = wg.genpsk()
     peer = Peer(address, private_key, keep_alive, listen_port, preshared_key)
     """
-    peer = Peer(address, private_key, keep_alive, listen_port)
+    peer = Peer(address, public_address, listen_port, private_key, keep_alive)
     pm.peers.append(peer)
-
-    avalon.info('Peer information summary:')
-    print('Address: {}'.format(peer.address))
-    print('Private Key: {}'.format(peer.private_key))
-    print('Keepalive: {}'.format(peer.keep_alive))
-    print('Listen Port: {}'.format(peer.listen_port))
-    # print('Preshared Key: {}'.format(peer.preshared_key))
+    print_peer_config(peer)
 
 
 def generate_configs(output_path):
@@ -227,11 +264,14 @@ def generate_configs(output_path):
                     # Skip if peer is self
                     continue
                 config.write('\n[Peer]\n')
+                print(p.private_key)
                 config.write('PublicKey = {}\n'.format(wg.pubkey(p.private_key)))
                 config.write('AllowedIPs = {}\n'.format(p.address))
+                if p.public_address != '':
+                    config.write('Endpoint = {}:{}\n'.format(p.public_address, p.listen_port))
                 if peer.keep_alive:
                     config.write('PersistentKeepalive = 25\n')
-                if peer.preshared_key:
+                if p.preshared_key:
                     config.write('PresharedKey = {}\n'.format(p.preshared_key))
 
 
@@ -247,9 +287,11 @@ def get_peers_settings():
 def print_help():
     help_lines = [
         '\n{}Commands are not case-sensitive{}'.format(avalon.FM.BD, avalon.FM.RST),
+        'ShowPeers',
         'LoadProfile [profile path]',
         'SaveProfile [profile path]',
         'NewProfile',
+        'AddPeers',
         'GenerateConfigs [output directory]',
         'Exit',
         'Quit',
@@ -273,12 +315,18 @@ def command_interpreter(commands):
         elif commands[1].lower() == 'help':
             print_help()
             result = 0
+        elif commands[1].lower() == 'showpeers':
+            for peer in pm.peers:
+                print_peer_config(peer)
+            result = 0
         elif commands[1].lower() == 'loadprofile':
             result = pm.load_profile(commands[2])
         elif commands[1].lower() == 'saveprofile':
             result = pm.save_profile(commands[2])
         elif commands[1].lower() == 'newprofile':
             result = pm.new_profile()
+        elif commands[1].lower() == 'addpeers':
+            result = pm.add_peers()
         elif commands[1].lower() == 'generateconfigs':
             result = generate_configs(commands[2])
         elif commands[1].lower() == 'exit' or commands[1].lower() == 'quit':
