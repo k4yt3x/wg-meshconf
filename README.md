@@ -1,10 +1,16 @@
 # WireGuard Mesh Configurator
 
+## 1.1.2 (October 15, 2018)
+
+1. Added output path detection.
+1. Added profile exporting path detection.
+1. Ask user if a output directory should be made if it doesn't exist.
+
 ## 1.1.1 (October 15, 2018)
 
 1. Added endpoint generation.
-1. Added "ShowPeers" command to show current config.
-1. Added "AddPeers" command to append peers to current config.
+2. Added "ShowPeers" command to show current config.
+3. Added "AddPeers" command to append peers to current config.
 
 ## Introduction
 
