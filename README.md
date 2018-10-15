@@ -29,6 +29,8 @@ WireGuard mesh configurator is a tool that will help you generating peer configu
 
 ## Usages
 
+### Installing WGC
+
 Clone the repository and enter it.
 
 ```
@@ -36,16 +38,54 @@ $ git clone https://github.com/K4YT3X/wireguard-mesh-configurator.git
 $ cd wireguard-mesh-configurator/
 ```
 
-Create a temporary folder for exporting configuration files.
-
-```
-$ mkdir /tmp/wireguard
-```
-
 Run the tool.
 
 ```
-$ python3 wireguard_mesh_configurator.py
+$ python3 wireguard_mesh_configurator.py interactive
 ```
 
-Then you will find all the generated configuration files under `/tmp/wireguard`.
+or
+
+```
+$ python3 wireguard_mesh_configurator.py int
+```
+
+### Creating a Profile
+
+Run the `NewProfile` command to create a new profile.
+
+```
+[WGC]> NewProfile  # Create new profile
+```
+
+Then the peer enrolling wizard will ask you for all the information needed for all the peers. Select `n` when being asked if you want to add a new peer to end the wizard.
+
+### Generating Configurations
+
+Run the following command to dump your currently-loaded profile into configuration files and export them to `output path`.
+
+```
+[WGC]> GenerateConfigurations [output path]
+```
+
+### Viewing All Peers
+
+To view all the peers configurations in the current profile:
+
+```
+[WGC]> ShowPeers
+```
+
+### Saving / Loading Profiles
+
+To save a profile:
+
+```
+[WGC]> SaveProfile [output path]
+```
+
+To load a profile:
+
+```
+[WGC]> LoadProfile [output path]
+```
