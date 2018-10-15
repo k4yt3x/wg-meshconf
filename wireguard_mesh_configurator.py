@@ -376,6 +376,7 @@ def main():
             exit(command_interpreter(sys.argv[0:]))
     except IndexError:
         avalon.warning('No commands specified')
+        print_help()
         exit(0)
     except (KeyboardInterrupt, EOFError):
         avalon.warning('Exiting')
