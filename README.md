@@ -1,10 +1,10 @@
 # WireGuard Mesh Configurator
 
-## 1.1.0 (October 14, 2018)
+## 1.1.1 (October 15, 2018)
 
-1. Changed interface to interactive shell
-1. Added save / load profile function
-1. Some other minor improvements
+1. Added endpoint generation.
+1. Added "ShowPeers" command to show current config.
+1. Added "AddPeers" command to append peers to current config.
 
 ## Introduction
 
