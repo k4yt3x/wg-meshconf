@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: October 15, 2018
+Last Modified: October 17, 2018
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -21,6 +21,7 @@ import traceback
 
 VERSION = '1.1.2'
 COMMANDS = [
+    'Interactive',
     'ShowPeers',
     'LoadProfile',
     'SaveProfile',
@@ -33,6 +34,13 @@ COMMANDS = [
 
 
 class ShellCompleter(object):
+    """ A Cisco-IOS-like shell completer
+
+    This is a Cisco-IOS-like shell completer, that is not
+    case-sensitive. If the command typed is not ambiguous,
+    then execute the only command that matches. User does
+    not have to enter the entire command.
+    """
 
     def __init__(self, options):
         self.options = sorted(options)
@@ -68,7 +76,12 @@ class Peer:
 class WireGuard:
     """ WireGuard utility controller
 
-    This class handles the interactions with the wg binary.
+    This class handles the interactions with the wg binary,
+    including:
+
+    - genkey
+    - pubkey
+    - genpsk
     """
 
     def __init__(self):
@@ -102,6 +115,9 @@ class WireGuard:
 
 class ProfileManager(object):
     """ Profile manager
+
+    Each instance of this class represents a profile,
+    which is a complete topology of a mesh / c/s network.
     """
 
     def __init__(self):
@@ -140,15 +156,20 @@ class ProfileManager(object):
             profile['peers'][peer.address]['private_key'] = peer.private_key
             profile['peers'][peer.address]['keep_alive'] = peer.keep_alive
 
+        # If profile already exists (file or link), ask the user if
+        # we should overwrite it.
         if os.path.isfile(profile_path) or os.path.islink(profile_path):
             if not avalon.ask('File already exists. Overwrite?', True):
                 avalon.warning('Aborted saving profile')
                 return 1
+
+        # Abort if profile_path points to a directory
         if os.path.isdir(profile_path):
             avalon.warning('Destination path is a directory')
             avalon.warning('Aborted saving profile')
             return 1
 
+        # Finally, write the profile into the destination file
         avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
         with open(profile_path, 'w') as wgc_config:
             json.dump(profile, wgc_config, indent=2)
@@ -167,12 +188,18 @@ class ProfileManager(object):
 
 
 def print_welcome():
+    """ Print program name and legal information
+    """
     print('WireGuard Mesh Configurator {}'.format(VERSION))
     print('(C) 2018 K4YT3X')
     print('Licensed under GNU GPL v3')
 
 
 def print_peer_config(peer):
+    """ Print the configuration of a specific peer
+
+    Input takes one Peer object.
+    """
     avalon.info('Peer {} information summary:'.format(peer.address))
     if peer.address:
         print('Address: {}'.format(peer.address))
@@ -188,6 +215,9 @@ def print_peer_config(peer):
 
 def enroll_peer():
     """ Enroll a new peer
+
+    Gets all the information needed to generate a
+    new Peer class object.
     """
 
     # Get peer tunnel address
@@ -299,13 +329,17 @@ def get_peers_settings():
 
     Keep enrolling peers until the user aborts.
     """
+    enroll_peer()
     while avalon.ask('Add new peer?', True):
         enroll_peer()
 
 
 def print_help():
+    """ Print help messages
+    """
     help_lines = [
         '\n{}Commands are not case-sensitive{}'.format(avalon.FM.BD, avalon.FM.RST),
+        'Interactive',
         'ShowPeers',
         'LoadProfile [profile path]',
         'SaveProfile [profile path]',
@@ -321,7 +355,11 @@ def print_help():
 
 
 def command_interpreter(commands):
-    """ AnyRadius shell command interpreter
+    """ WGC shell command interpreter
+
+    This function interprets commands from CLI or
+    the interactive shell, and passes the parameters
+    to the corresponding functions.
     """
     try:
         # Try to guess what the user is saying
@@ -368,6 +406,7 @@ def command_interpreter(commands):
 
 def main():
     """ WireGuard Mesh Configurator main function
+
     This function controls the main flow of this program.
     """
 
