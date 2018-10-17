@@ -19,7 +19,7 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.2'
+VERSION = '1.1.3'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
@@ -178,6 +178,14 @@ class ProfileManager(object):
     def new_profile(self):
         """ Create new profile and flush the peers list
         """
+
+        # Warn the user before flushing configurations
+        avalon.warning('This will flush the currently loaded profile!')
+        if len(self.peers) != 0:
+            if not avalon.ask('Continue?', False):
+                return
+
+        # Reset self.peers and start enrolling new peer data
         self.peers = []
         get_peers_settings()
 
@@ -339,13 +347,13 @@ def print_help():
     """
     help_lines = [
         '\n{}Commands are not case-sensitive{}'.format(avalon.FM.BD, avalon.FM.RST),
-        'Interactive',
-        'ShowPeers',
-        'LoadProfile [profile path]',
-        'SaveProfile [profile path]',
-        'NewProfile',
-        'AddPeers',
-        'GenerateConfigs [output directory]',
+        'Interactive  // launch interactive shell',
+        'ShowPeers  // show all peer information',
+        'LoadProfile [profile path]  // load profile from profile_path',
+        'SaveProfile [profile path]  // save profile to profile_path',
+        'NewProfile  // create new profile',
+        'AddPeers  // add new peers into the current profile',
+        'GenerateConfigs [output directory]  // generate configuration files',
         'Exit',
         'Quit',
         '',
