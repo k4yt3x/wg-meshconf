@@ -1,16 +1,15 @@
 # WireGuard Mesh Configurator
 
+## 1.1.4 (October 17, 2018)
+
+1. Now using serialization to save profile instead of JSON.
+1. Minor tweaks to the code for it to look more organized.
+
 ## 1.1.3 (October 17, 2018)
 
 1. Added warning before flushing configurations when creating a new profile.
-1. Added descriptions in help command
-1. Added in-line documentation
-
-## 1.1.2 (October 15, 2018)
-
-1. Added output path detection.
-2. Added profile exporting path detection.
-3. Ask user if a output directory should be made if it doesn't exist.
+2. Added descriptions in help command
+3. Added in-line documentation
 
 ## Introduction
 
