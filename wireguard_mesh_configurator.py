@@ -11,15 +11,15 @@ Licensed under the GNU General Public License Version 3 (GNU GPL v3),
 (C) 2018 K4YT3X
 """
 import avalon_framework as avalon
-import json
 import os
+import pickle
 import re
 import readline
 import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.3'
+VERSION = '1.1.4'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
@@ -31,6 +31,18 @@ COMMANDS = [
     'Exit',
     'Quit',
 ]
+
+
+class Utilities:
+    """ Useful utilities
+
+    This class contains a number of utility tools.
+    """
+
+    def execute(command, input_value=''):
+        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = process.communicate(input=input_value)[0]
+        return output.decode().replace('\n', '')
 
 
 class ShellCompleter(object):
@@ -93,8 +105,7 @@ class WireGuard:
         Generate a new wireguard private key via
         wg command.
         """
-        output = subprocess.Popen(['wg', 'genkey'], stdout=subprocess.PIPE).communicate()[0]
-        return output.decode().replace('\n', '')
+        return Utilities.execute(['wg', 'genkey'])
 
     def pubkey(self, public_key):
         """ Convert WG private key into public key
@@ -102,15 +113,12 @@ class WireGuard:
         Uses wg pubkey command to convert the wg private
         key into a public key.
         """
-        process = subprocess.Popen(['wg', 'pubkey'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        output = process.communicate(input=public_key.encode('utf-8'))[0]
-        return output.decode().replace('\n', '')
+        return Utilities.execute(['wg', 'pubkey'], input_value=public_key.encode('utf-8'))
 
     def genpsk(self):
         """ Generate a random base64 psk
         """
-        output = subprocess.Popen(['wg', 'genpsk'], stdout=subprocess.PIPE).communicate()[0]
-        return output.decode().replace('\n', '')
+        return Utilities.execute(['wg', 'genpsk'])
 
 
 class ProfileManager(object):
@@ -126,35 +134,22 @@ class ProfileManager(object):
         self.peers = []
 
     def load_profile(self, profile_path):
-        """ Load profile from a json file
+        """ Load profile from a file
+
+        Open the pickle file, deserialize the content and
+        load it back into the profile manager.
         """
         avalon.dbgInfo('Loading profile from: {}'.format(profile_path))
-        with open(profile_path, 'r') as wgc_config:
-            profile = json.load(wgc_config)
-            wgc_config.close()
-
-        for peer in profile['peers']:
-            address = profile['peers'][peer]['address']
-            public_address = profile['peers'][peer]['public_address']
-            listen_port = profile['peers'][peer]['listen_port']
-            private_key = profile['peers'][peer]['private_key']
-            keep_alive = profile['peers'][peer]['keep_alive']
-            pm.peers.append(Peer(address, public_address, listen_port, private_key, keep_alive))
+        with open(profile_path, 'rb') as profile:
+            pm.peers = pickle.load(profile)
+            profile.close()
 
     def save_profile(self, profile_path):
-        """ Save current profile to a json file
-        """
+        """ Save current profile to a file
 
-        # Convert peer objects into dictionary format
-        profile = {}
-        profile['peers'] = {}
-        for peer in pm.peers:
-            profile['peers'][peer.address] = {}
-            profile['peers'][peer.address]['address'] = peer.address
-            profile['peers'][peer.address]['public_address'] = peer.public_address
-            profile['peers'][peer.address]['listen_port'] = peer.listen_port
-            profile['peers'][peer.address]['private_key'] = peer.private_key
-            profile['peers'][peer.address]['keep_alive'] = peer.keep_alive
+        Serializes the current profile with pickle
+        and dumps it into a file.
+        """
 
         # If profile already exists (file or link), ask the user if
         # we should overwrite it.
@@ -171,9 +166,9 @@ class ProfileManager(object):
 
         # Finally, write the profile into the destination file
         avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
-        with open(profile_path, 'w') as wgc_config:
-            json.dump(profile, wgc_config, indent=2)
-            wgc_config.close()
+        with open(profile_path, 'wb') as profile:
+            pickle.dump(pm.peers, profile)
+            profile.close()
 
     def new_profile(self):
         """ Create new profile and flush the peers list
