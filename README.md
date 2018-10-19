@@ -1,15 +1,13 @@
 # WireGuard Mesh Configurator
 
+## 1.1.5 (October 19, 2018)
+
+1. Patch for `avalon_framework` 1.6.0
+
 ## 1.1.4 (October 17, 2018)
 
 1. Now using serialization to save profile instead of JSON.
 1. Minor tweaks to the code for it to look more organized.
-
-## 1.1.3 (October 17, 2018)
-
-1. Added warning before flushing configurations when creating a new profile.
-2. Added descriptions in help command
-3. Added in-line documentation
 
 ## Introduction
 
