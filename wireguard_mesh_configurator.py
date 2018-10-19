@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: October 17, 2018
+Last Modified: October 19, 2018
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -139,7 +139,7 @@ class ProfileManager(object):
         Open the pickle file, deserialize the content and
         load it back into the profile manager.
         """
-        Avalon.dbgInfo('Loading profile from: {}'.format(profile_path))
+        Avalon.debug_info('Loading profile from: {}'.format(profile_path))
         with open(profile_path, 'rb') as profile:
             pm.peers = pickle.load(profile)
             profile.close()
@@ -165,7 +165,7 @@ class ProfileManager(object):
             return 1
 
         # Finally, write the profile into the destination file
-        Avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
+        Avalon.debug_info('Writing profile to: {}'.format(profile_path))
         with open(profile_path, 'wb') as profile:
             pickle.dump(pm.peers, profile)
             profile.close()
@@ -299,7 +299,7 @@ def generate_configs(output_path):
 
     # Iterate through all peers and generate configuration for each peer
     for peer in pm.peers:
-        Avalon.dbgInfo('Generating configuration file for {}'.format(peer.address))
+        Avalon.debug_info('Generating configuration file for {}'.format(peer.address))
         with open('{}/{}.conf'.format(output_path, peer.address.split('/')[0]), 'w') as config:
 
             # Write Interface configuration
