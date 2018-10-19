@@ -10,7 +10,7 @@ Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018 K4YT3X
 """
-import avalon_framework as avalon
+from avalon_framework import Avalon
 import os
 import pickle
 import re
@@ -19,7 +19,7 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.4'
+VERSION = '1.1.5'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
@@ -139,7 +139,7 @@ class ProfileManager(object):
         Open the pickle file, deserialize the content and
         load it back into the profile manager.
         """
-        avalon.dbgInfo('Loading profile from: {}'.format(profile_path))
+        Avalon.dbgInfo('Loading profile from: {}'.format(profile_path))
         with open(profile_path, 'rb') as profile:
             pm.peers = pickle.load(profile)
             profile.close()
@@ -154,18 +154,18 @@ class ProfileManager(object):
         # If profile already exists (file or link), ask the user if
         # we should overwrite it.
         if os.path.isfile(profile_path) or os.path.islink(profile_path):
-            if not avalon.ask('File already exists. Overwrite?', True):
-                avalon.warning('Aborted saving profile')
+            if not Avalon.ask('File already exists. Overwrite?', True):
+                Avalon.warning('Aborted saving profile')
                 return 1
 
         # Abort if profile_path points to a directory
         if os.path.isdir(profile_path):
-            avalon.warning('Destination path is a directory')
-            avalon.warning('Aborted saving profile')
+            Avalon.warning('Destination path is a directory')
+            Avalon.warning('Aborted saving profile')
             return 1
 
         # Finally, write the profile into the destination file
-        avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
+        Avalon.dbgInfo('Writing profile to: {}'.format(profile_path))
         with open(profile_path, 'wb') as profile:
             pickle.dump(pm.peers, profile)
             profile.close()
@@ -175,9 +175,9 @@ class ProfileManager(object):
         """
 
         # Warn the user before flushing configurations
-        avalon.warning('This will flush the currently loaded profile!')
+        Avalon.warning('This will flush the currently loaded profile!')
         if len(self.peers) != 0:
-            if not avalon.ask('Continue?', False):
+            if not Avalon.ask('Continue?', False):
                 return
 
         # Reset self.peers and start enrolling new peer data
@@ -203,7 +203,7 @@ def print_peer_config(peer):
 
     Input takes one Peer object.
     """
-    avalon.info('Peer {} information summary:'.format(peer.address))
+    Avalon.info('Peer {} information summary:'.format(peer.address))
     if peer.address:
         print('Address: {}'.format(peer.address))
     if peer.public_address:
@@ -225,40 +225,40 @@ def enroll_peer():
 
     # Get peer tunnel address
     while True:
-        address = avalon.gets('Address (leave empty if client only): ')
+        address = Avalon.gets('Address (leave empty if client only): ')
         result = re.match('^(?:\d{1,3}\.){3}\d{1,3}/{1}(?:\d\d?)?$', address)
         if result is None:
-            avalon.error('Invalid address entered')
-            avalon.error('Please use CIDR notation (e.g. 10.0.0.0/8)')
+            Avalon.error('Invalid address entered')
+            Avalon.error('Please use CIDR notation (e.g. 10.0.0.0/8)')
             continue
         break
 
     # Get peer public IP address
     while True:
-        public_address = avalon.gets('Public address (leave empty if client only): ')
+        public_address = Avalon.gets('Public address (leave empty if client only): ')
         result = re.match('^(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?$', public_address)
         if result is None and public_address != '':  # field not required
-            avalon.error('Invalid IP address entered')
+            Avalon.error('Invalid IP address entered')
             continue
         break
 
     # Get peer listening port
-    listen_port = avalon.gets('Listen port (leave empty for client): ')
+    listen_port = Avalon.gets('Listen port (leave empty for client): ')
 
     # Get peer private key
-    private_key = avalon.gets('Private key (leave empty for auto generation): ')
+    private_key = Avalon.gets('Private key (leave empty for auto generation): ')
     if private_key == '':
         private_key = wg.genkey()
 
     # Ask if this peer needs to be actively connected
     # if peer is behind NAT and needs to be accessed actively
     # PersistentKeepalive must be turned on (!= 0)
-    keep_alive = avalon.ask('Keep alive?', False)
+    keep_alive = Avalon.ask('Keep alive?', False)
 
     """
     preshared_key = False
-    if avalon.ask('Use a preshared key?', True):
-        preshared_key = avalon.gets('Preshared Key (leave empty for auto generation): ')
+    if Avalon.ask('Use a preshared key?', True):
+        preshared_key = Avalon.gets('Preshared Key (leave empty for auto generation): ')
         if preshared_key == '':
             preshared_key = wg.genpsk()
     peer = Peer(address, private_key, keep_alive, listen_port, preshared_key)
@@ -276,30 +276,30 @@ def generate_configs(output_path):
     the CONFIG_OUTPUT directory.
     """
     if len(pm.peers) == 0:
-        avalon.warning('No peers configured, exiting')
+        Avalon.warning('No peers configured, exiting')
         exit(0)
     if len(pm.peers) == 1:
-        avalon.warning('Only one peer configured')
+        Avalon.warning('Only one peer configured')
 
-    avalon.info('Generating configuration files')
+    Avalon.info('Generating configuration files')
 
     # Abort is destination is a file / link
     if os.path.isfile(output_path) or os.path.islink(output_path):
-        avalon.warning('Destination path is a file / link')
-        avalon.warning('Aborting configuration generation')
+        Avalon.warning('Destination path is a file / link')
+        Avalon.warning('Aborting configuration generation')
         return 1
 
     # Ask if user wants to create the output directory if it doesn't exist
     if not os.path.isdir(output_path):
-        if avalon.ask('Output directory doesn\'t exist. Create output directory?', True):
+        if Avalon.ask('Output directory doesn\'t exist. Create output directory?', True):
             os.mkdir(output_path)
         else:
-            avalon('Aborting configuration generation')
+            Avalon.warning('Aborting configuration generation')
             return 1
 
     # Iterate through all peers and generate configuration for each peer
     for peer in pm.peers:
-        avalon.dbgInfo('Generating configuration file for {}'.format(peer.address))
+        Avalon.dbgInfo('Generating configuration file for {}'.format(peer.address))
         with open('{}/{}.conf'.format(output_path, peer.address.split('/')[0]), 'w') as config:
 
             # Write Interface configuration
@@ -333,7 +333,7 @@ def get_peers_settings():
     Keep enrolling peers until the user aborts.
     """
     enroll_peer()
-    while avalon.ask('Add new peer?', True):
+    while Avalon.ask('Add new peer?', True):
         enroll_peer()
 
 
@@ -341,7 +341,7 @@ def print_help():
     """ Print help messages
     """
     help_lines = [
-        '\n{}Commands are not case-sensitive{}'.format(avalon.FM.BD, avalon.FM.RST),
+        '\n{}Commands are not case-sensitive{}'.format(Avalon.FM.BD, Avalon.FM.RST),
         'Interactive  // launch interactive shell',
         'ShowPeers  // show all peer information',
         'LoadProfile [profile path]  // load profile from profile_path',
@@ -390,19 +390,19 @@ def command_interpreter(commands):
         elif commands[1].lower() == 'generateconfigs':
             result = generate_configs(commands[2])
         elif commands[1].lower() == 'exit' or commands[1].lower() == 'quit':
-            avalon.warning('Exiting')
+            Avalon.warning('Exiting')
             exit(0)
         elif len(possibilities) > 0:
-            avalon.warning('Ambiguous command \"{}\"'.format(commands[1]))
+            Avalon.warning('Ambiguous command \"{}\"'.format(commands[1]))
             print('Use \"Help\" command to list available commands')
             result = 1
         else:
-            avalon.error('Invalid command')
+            Avalon.error('Invalid command')
             print('Use \"Help\" command to list available commands')
             result = 1
         return result
     except IndexError:
-        avalon.error('Invalid arguments')
+        Avalon.error('Invalid arguments')
         print('Use \"Help\" command to list available commands')
         result = 0
 
@@ -429,21 +429,21 @@ def main():
             readline.set_completer(completer.complete)
             readline.parse_and_bind('tab: complete')
             # Launch interactive trojan shell
-            prompt = '{}[WGC]> {}'.format(avalon.FM.BD, avalon.FM.RST)
+            prompt = '{}[WGC]> {}'.format(Avalon.FM.BD, Avalon.FM.RST)
             while True:
                 command_interpreter([''] + input(prompt).split(' '))
         else:
             # Return to shell with command return value
             exit(command_interpreter(sys.argv[0:]))
     except IndexError:
-        avalon.warning('No commands specified')
+        Avalon.warning('No commands specified')
         print_help()
         exit(0)
     except (KeyboardInterrupt, EOFError):
-        avalon.warning('Exiting')
+        Avalon.warning('Exiting')
         exit(0)
     except Exception:
-        avalon.error('Exception caught')
+        Avalon.error('Exception caught')
         traceback.print_exc()
         exit(1)
 
