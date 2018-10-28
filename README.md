@@ -13,18 +13,98 @@
 
 WireGuard mesh configurator is a tool that will help you generating peer configuration files for wireguard mesh networks. You generate configuration files for a large amount of peers easily and quickly via this tool.
 
-## Gallery
+## Learn By An Example
 
-![new_profile](https://user-images.githubusercontent.com/21986859/46922682-bb7aaf80-cfda-11e8-812e-b2458009302a.png)
-*Creating a new mesh profile*
+In this section, we will be going through how to configure a mesh network with the topology shown below using wireguard mesh configurator (this tool, **WGC**).
 
-![save_load](https://user-images.githubusercontent.com/21986859/46922686-c9303500-cfda-11e8-9685-062a8a24ed27.png)
-*Saving and Loading Profiles*
+![example_topology](https://user-images.githubusercontent.com/21986859/47622988-edfbd080-dae1-11e8-97f6-ff8ef56ffecc.png)
 
-![generated_configs](https://user-images.githubusercontent.com/21986859/46964450-17464680-d076-11e8-9306-bfe69a88c858.png)
-*Generated configuration files*
+### Step 1: Create a Profile
 
-## Usages
+Launch the WGC interactive shell. This will be where you give instructions to WGC.
+
+```
+$ python3 wireguard_mesh_configurator.py int
+```
+
+Every profile in WGC contains a complete topology. To create a new mesh network, we start by creating a new profile. Once a profile is created, you will be prompted automatically to enroll new peers. This leads us to the next step.
+
+```
+[WGC]> new
+```
+
+![step1](https://user-images.githubusercontent.com/21986859/47623179-5d72bf80-dae4-11e8-9705-9158ea8f75c2.png)
+
+### Step 2: Enroll Peers
+
+Now that a profile has already been created, we need to input peers' information into WGC, so it knows the layout of the network.
+
+![enroll_peers](https://user-images.githubusercontent.com/21986859/47623237-526c5f00-dae5-11e8-823a-863e5372faa9.png)
+
+### Step 3: Export Configurations
+
+Now that we have all the peers in the profile, it's time to export everything into wireguard configuration files. We can dump configuration files into a directory using the `GenerateConfigurations` command. The following command will dump all the configuration files into the `/tmp/wg` directory.
+
+```
+[WGC]> gen /tmp/wg
+```
+
+![gen_config](https://user-images.githubusercontent.com/21986859/47623276-f8b86480-dae5-11e8-9c41-54bab4523031.png)
+
+We can also take a look at the generated configuration files.
+
+![generated_configs](https://user-images.githubusercontent.com/21986859/47623330-a3c91e00-dae6-11e8-84bd-85971b3092b3.png)
+
+### Step 4: Copy Configuration Files to Endpoints
+
+With the configuration files generated, all that's left to do is to copy the configuration files to the endpoints. Copy each configuration to the corresponding device with any method you like (sftp, ftps, plain copy & paste, etc.).
+
+Put the configuration file to `/etc/wireguard/wg0.conf` is recommended, since it will make us able to use the `wg-quick` command for express configuration.
+
+### Step 5: Enable WireGuard and Apply the Configuration
+
+Lets tell wireguard to create an interface with this configuration and make it a service, so the interface will be created as system is booted up.
+
+```
+$ sudo wg-quick up wg0
+$ sudo systemctl enable wg-quick@wg0
+```
+
+![apply_enable](https://user-images.githubusercontent.com/21986859/47623379-3f5a8e80-dae7-11e8-9350-555e61884691.png)
+
+You can then verify the wireguard status via the `wg` command.
+
+```
+$ sudo wg
+```
+
+![wg_status](https://user-images.githubusercontent.com/21986859/47623489-9ca30f80-dae8-11e8-9241-3c7421b982db.png)
+
+### Step 6: Saving and Loading Profiles
+
+We can save a profile for future use using the `SaveProfile` command. The following example will save the profile to `/home/k4yt3x/example.pkl`.
+
+```
+[WGC]> save /home/k4yt3x/example.pkl
+```
+
+To load the profile, just use the `LoadProfile` command.
+
+```
+[WGC]> load /home/k4yt3x/example.pkl
+```
+
+Then you can use `ShowPeers` command to verify that everything has been loaded correctly.
+
+```
+[WGC]> sh
+```
+
+![saving_loading](https://user-images.githubusercontent.com/21986859/47623453-2d2d2000-dae8-11e8-9c21-528a7d9acde0.png)
+
+That concludes the "Learn By An Example" section. Hope it helps.
+
+## Detailed Usages
 
 ### Installing WGC
 
@@ -33,6 +113,12 @@ Clone the repository and enter it.
 ```
 $ git clone https://github.com/K4YT3X/wireguard-mesh-configurator.git
 $ cd wireguard-mesh-configurator/
+```
+
+Install Python 3 dependencies.
+
+```
+$ sudo pip3 install -r requirements.txt
 ```
 
 Run the tool.
