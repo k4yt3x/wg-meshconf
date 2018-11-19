@@ -1,13 +1,9 @@
 # WireGuard Mesh Configurator
 
-## 1.1.5 (October 19, 2018)
+## 1.1.6 (November 19, 2018)
 
-1. Patch for `avalon_framework` 1.6.0
-
-## 1.1.4 (October 17, 2018)
-
-1. Now using serialization to save profile instead of JSON.
-1. Minor tweaks to the code for it to look more organized.
+1. Peers can now be deleted via the `DeletePeer` command.
+1. Peers are now added one by one via the `AddPeer` command.
 
 ## Introduction
 
