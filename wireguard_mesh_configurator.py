@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: October 19, 2018
+Last Modified: November 19, 2018
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -19,14 +19,15 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.5'
+VERSION = '1.1.6'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
     'LoadProfile',
     'SaveProfile',
     'NewProfile',
-    'AddPeers',
+    'AddPeer',
+    'DeletePeer',
     'GenerateConfigs',
     'Exit',
     'Quit',
@@ -182,12 +183,6 @@ class ProfileManager(object):
 
         # Reset self.peers and start enrolling new peer data
         self.peers = []
-        get_peers_settings()
-
-    def add_peers(self):
-        """ Add new peers into the profile
-        """
-        get_peers_settings()
 
 
 def print_welcome():
@@ -216,7 +211,7 @@ def print_peer_config(peer):
     # print('Preshared Key: {}'.format(peer.preshared_key))
 
 
-def enroll_peer():
+def add_peer():
     """ Enroll a new peer
 
     Gets all the information needed to generate a
@@ -266,6 +261,16 @@ def enroll_peer():
     peer = Peer(address, public_address, listen_port, private_key, keep_alive)
     pm.peers.append(peer)
     print_peer_config(peer)
+
+
+def delete_peer(address):
+    """ Delete a peer
+
+    Delete a specific peer from the peer list.
+    """
+    for peer in pm.peers:
+        if peer.address == address:
+            pm.peers.remove(peer)
 
 
 def generate_configs(output_path):
@@ -327,16 +332,6 @@ def generate_configs(output_path):
                     config.write('PresharedKey = {}\n'.format(p.preshared_key))
 
 
-def get_peers_settings():
-    """ Get all peers' settings
-
-    Keep enrolling peers until the user aborts.
-    """
-    enroll_peer()
-    while Avalon.ask('Add new peer?', True):
-        enroll_peer()
-
-
 def print_help():
     """ Print help messages
     """
@@ -347,7 +342,8 @@ def print_help():
         'LoadProfile [profile path]  // load profile from profile_path',
         'SaveProfile [profile path]  // save profile to profile_path',
         'NewProfile  // create new profile',
-        'AddPeers  // add new peers into the current profile',
+        'AddPeers  // add a new peer into the current profile',
+        'DeletePeer  // delete a peer from the current profile',
         'GenerateConfigs [output directory]  // generate configuration files',
         'Exit',
         'Quit',
@@ -385,8 +381,10 @@ def command_interpreter(commands):
             result = pm.save_profile(commands[2])
         elif commands[1].lower() == 'newprofile':
             result = pm.new_profile()
-        elif commands[1].lower() == 'addpeers':
-            result = pm.add_peers()
+        elif commands[1].lower() == 'addpeer':
+            result = add_peer()
+        elif commands[1].lower() == 'deletepeer':
+            result = delete_peer(commands[2])
         elif commands[1].lower() == 'generateconfigs':
             result = generate_configs(commands[2])
         elif commands[1].lower() == 'exit' or commands[1].lower() == 'quit':
