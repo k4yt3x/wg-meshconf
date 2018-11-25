@@ -129,7 +129,7 @@ or
 $ python3 wireguard_mesh_configurator.py int
 ```
 
-### Creating a Profile
+### Creating A Profile
 
 Run the `NewProfile` command to create a new profile.
 
@@ -138,6 +138,22 @@ Run the `NewProfile` command to create a new profile.
 ```
 
 Then the peer enrolling wizard will ask you for all the information needed for all the peers. Select `n` when being asked if you want to add a new peer to end the wizard.
+
+### Adding a Peer
+
+Use the `AddPeer` command to initialize the wizard of appending a new peer to the profile.
+
+```
+[WGC]> AddPeer
+```
+
+### Deleting a Peer
+
+Use the `DeletePeer` command to remove a peer from the profile.
+
+```
+[WGC]> DeletePeer [Peer Address (e.g. 10.0.0.1/8)]
+```
 
 ### Generating Configurations
 
