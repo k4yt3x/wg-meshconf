@@ -1,5 +1,9 @@
 # WireGuard Mesh Configurator
 
+## On the Horizon: `wg-dynamic`
+
+`wg-dynamic` is a tool designed officially by WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic)).
+
 ## 1.1.6 (November 19, 2018)
 
 1. Peers can now be deleted via the `DeletePeer` command.
