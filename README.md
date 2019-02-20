@@ -1,9 +1,13 @@
 # WireGuard Mesh Configurator
 
+## 1.1.7 (Feburary 20, 2019)
+
+- Public address can now be either FQDN or IP address, as requested by @KipourosV
+
 ## 1.1.6 (November 19, 2018)
 
-1. Peers can now be deleted via the `DeletePeer` command.
-1. Peers are now added one by one via the `AddPeer` command.
+- Peers can now be deleted via the `DeletePeer` command.
+- Peers are now added one by one via the `AddPeer` command.
 
 ## Introduction
 
