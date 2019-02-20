@@ -4,11 +4,11 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: November 19, 2018
+Last Modified: Feburary 20, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
-(C) 2018 K4YT3X
+(C) 2018-2019 K4YT3X
 """
 from avalon_framework import Avalon
 import os
@@ -19,7 +19,7 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.6'
+VERSION = '1.1.7'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
@@ -221,8 +221,7 @@ def add_peer():
     # Get peer tunnel address
     while True:
         address = Avalon.gets('Address (leave empty if client only): ')
-        result = re.match('^(?:\d{1,3}\.){3}\d{1,3}/{1}(?:\d\d?)?$', address)
-        if result is None:
+        if re.match('^(?:\d{1,3}\.){3}\d{1,3}/{1}(?:\d\d?)?$', address) is None:
             Avalon.error('Invalid address entered')
             Avalon.error('Please use CIDR notation (e.g. 10.0.0.0/8)')
             continue
@@ -231,9 +230,17 @@ def add_peer():
     # Get peer public IP address
     while True:
         public_address = Avalon.gets('Public address (leave empty if client only): ')
-        result = re.match('^(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?$', public_address)
-        if result is None and public_address != '':  # field not required
-            Avalon.error('Invalid IP address entered')
+
+        # Check if public_address is valid IP or FQDN
+        valid_address = False
+        if re.match('^(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?$', public_address) is not None:
+            valid_address = True
+        if re.match('(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)', public_address) is not None:
+            valid_address = True
+
+        if not valid_address and public_address != '':  # field not required
+            Avalon.error('Invalid public address address entered')
+            Avalon.error('Please enter an IP address or FQDN')
             continue
         break
 
