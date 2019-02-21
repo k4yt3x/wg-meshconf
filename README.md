@@ -17,6 +17,24 @@
 
 WireGuard mesh configurator is a tool that will help you generating peer configuration files for wireguard mesh networks. You generate configuration files for a large amount of peers easily and quickly via this tool.
 
+## Prerequisites
+
+### System Packages
+
+|Package|Explanation|Example|
+|-|-|-|
+|ncurses dev package|Required by the installation of the Python `readline` library.|`libncurses5-dev` on Debian|
+
+### Python Libraries
+
+The following libraries can be installed easily through executing `pip3 install -r requirements.txt` under the root directory of this repository.
+
+|Package|Explanation|
+|-|-|
+|`avalon_framework`|Command line I/O library|
+|`readline`|For better interactive command line interface|
+|`netaddr`|For calculating IP addresses|
+
 ## Learn By An Example
 
 In this section, we will be going through how to configure a mesh network with the topology shown below using wireguard mesh configurator (this tool, **WGC**).
