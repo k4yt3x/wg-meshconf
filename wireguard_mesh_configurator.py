@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: Feburary 20, 2019
+Last Modified: May 5, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -189,7 +189,7 @@ def print_welcome():
     """ Print program name and legal information
     """
     print('WireGuard Mesh Configurator {}'.format(VERSION))
-    print('(C) 2018 K4YT3X')
+    print('(C) 2018-2019 K4YT3X')
     print('Licensed under GNU GPL v3')
 
 
@@ -220,7 +220,7 @@ def add_peer():
 
     # Get peer tunnel address
     while True:
-        address = Avalon.gets('Address (leave empty if client only): ')
+        address = Avalon.gets('Address (leave empty if client only) [IP/CIDR]: ')
         if re.match('^(?:\d{1,3}\.){3}\d{1,3}/{1}(?:\d\d?)?$', address) is None:
             Avalon.error('Invalid address entered')
             Avalon.error('Please use CIDR notation (e.g. 10.0.0.0/8)')
@@ -229,7 +229,7 @@ def add_peer():
 
     # Get peer public IP address
     while True:
-        public_address = Avalon.gets('Public address (leave empty if client only): ')
+        public_address = Avalon.gets('Public address (leave empty if client only) [IP|FQDN]: ')
 
         # Check if public_address is valid IP or FQDN
         valid_address = False
@@ -245,7 +245,7 @@ def add_peer():
         break
 
     # Get peer listening port
-    listen_port = Avalon.gets('Listen port (leave empty for client): ')
+    listen_port = Avalon.gets('Listen port (leave empty for client) [1-65535]: ')
 
     # Get peer private key
     private_key = Avalon.gets('Private key (leave empty for auto generation): ')
