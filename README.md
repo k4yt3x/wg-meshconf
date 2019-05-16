@@ -4,14 +4,14 @@
 
 `wg-dynamic` is a tool designed officially by WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic)).
 
+## 1.2.0 (May 16, 2019)
+
+- You can now set Aliases and Descriptions for peers.
+- Profiles can now be saved and loaded in JSON format.
+
 ## 1.1.7 (Feburary 20, 2019)
 
 - Public address can now be either FQDN or IP address, as requested by @KipourosV
-
-## 1.1.6 (November 19, 2018)
-
-- Peers can now be deleted via the `DeletePeer` command.
-- Peers are now added one by one via the `AddPeer` command.
 
 ## Introduction
 
@@ -199,14 +199,26 @@ To view all the peers configurations in the current profile:
 
 ### Saving / Loading Profiles
 
-To save a profile:
+To save a profile in JSON format:
 
 ```
-[WGC]> SaveProfile [output path]
+[WGC]> JSONSaveProfile [output path]
 ```
 
-To load a profile:
+To save a profile in Pickle format:
 
 ```
-[WGC]> LoadProfile [output path]
+[WGC]> PickleSaveProfile [output path]
+```
+
+To load a profile in JSON format:
+
+```
+[WGC]> JSONLoadProfile [output path]
+```
+
+To load a profile in Pickle format:
+
+```
+[WGC]> PickleLoadProfile [output path]
 ```
