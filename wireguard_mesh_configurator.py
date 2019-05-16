@@ -4,13 +4,14 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: May 5, 2019
+Last Modified: May 16, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018-2019 K4YT3X
 """
 from avalon_framework import Avalon
+import json
 import os
 import pickle
 import re
@@ -19,12 +20,14 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.1.7'
+VERSION = '1.2.0'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
-    'LoadProfile',
-    'SaveProfile',
+    'JSONLoadProfile',
+    'JSONSaveProfile',
+    'PickleLoadProfile',
+    'PickleSaveProfile',
     'NewProfile',
     'AddPeer',
     'DeletePeer',
@@ -40,6 +43,7 @@ class Utilities:
     This class contains a number of utility tools.
     """
 
+    @staticmethod
     def execute(command, input_value=''):
         process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         output = process.communicate(input=input_value)[0]
@@ -77,13 +81,15 @@ class Peer:
     the wireguard mesh network.
     """
 
-    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=False):
+    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=None, alias=None, description=None):
         self.address = address
         self.public_address = public_address
         self.listen_port = listen_port
         self.private_key = private_key
         self.keep_alive = keep_alive
         self.preshared_key = preshared_key
+        self.alias = alias
+        self.description = description
 
 
 class WireGuard:
@@ -134,18 +140,19 @@ class ProfileManager(object):
         """
         self.peers = []
 
-    def load_profile(self, profile_path):
+    def pickle_load_profile(self, profile_path):
         """ Load profile from a file
 
         Open the pickle file, deserialize the content and
         load it back into the profile manager.
         """
-        Avalon.debug_info('Loading profile from: {}'.format(profile_path))
+        self.peers = []
+        Avalon.debug_info(f'Loading profile from: {profile_path}')
         with open(profile_path, 'rb') as profile:
             pm.peers = pickle.load(profile)
             profile.close()
 
-    def save_profile(self, profile_path):
+    def pickle_save_profile(self, profile_path):
         """ Save current profile to a file
 
         Serializes the current profile with pickle
@@ -166,9 +173,54 @@ class ProfileManager(object):
             return 1
 
         # Finally, write the profile into the destination file
-        Avalon.debug_info('Writing profile to: {}'.format(profile_path))
+        Avalon.debug_info(f'Writing profile to: {profile_path}')
         with open(profile_path, 'wb') as profile:
             pickle.dump(pm.peers, profile)
+            profile.close()
+    
+    def json_load_profile(self, profile_path):
+        """ Load profile to JSON file
+
+        Dumps each peer's __dict__ to JSON file.
+        """
+        self.peers = []
+        Avalon.debug_info(f'Loading profile from: {profile_path}')
+        with open(profile_path, 'rb') as profile:
+            loaded_profiles = json.load(profile)
+            profile.close()
+        
+        for p in loaded_profiles['peers']:
+            peer = Peer(p['address'], p['public_address'], p['listen_port'], p['private_key'], keep_alive=p['keep_alive'], alias=p['alias'], description=p['description'])
+            pm.peers.append(peer)
+
+    def json_save_profile(self, profile_path):
+        """ Save current profile to a JSON file
+        """
+
+        # If profile already exists (file or link), ask the user if
+        # we should overwrite it.
+        if os.path.isfile(profile_path) or os.path.islink(profile_path):
+            if not Avalon.ask('File already exists. Overwrite?', True):
+                Avalon.warning('Aborted saving profile')
+                return 1
+
+        # Abort if profile_path points to a directory
+        if os.path.isdir(profile_path):
+            Avalon.warning('Destination path is a directory')
+            Avalon.warning('Aborted saving profile')
+            return 1
+
+        # Finally, write the profile into the destination file
+        Avalon.debug_info(f'Writing profile to: {profile_path}')
+
+        peers_dict = {}
+        peers_dict['peers'] = []
+
+        for peer in pm.peers:
+            peers_dict['peers'].append(peer.__dict__)
+
+        with open(profile_path, 'w') as profile:
+            json.dump(peers_dict, profile, indent=4)
             profile.close()
 
     def new_profile(self):
@@ -188,7 +240,7 @@ class ProfileManager(object):
 def print_welcome():
     """ Print program name and legal information
     """
-    print('WireGuard Mesh Configurator {}'.format(VERSION))
+    print(f'WireGuard Mesh Configurator {VERSION}')
     print('(C) 2018-2019 K4YT3X')
     print('Licensed under GNU GPL v3')
 
@@ -198,17 +250,22 @@ def print_peer_config(peer):
 
     Input takes one Peer object.
     """
-    Avalon.info('Peer {} information summary:'.format(peer.address))
+    if peer.alias:
+        Avalon.info(f'{peer.alias} information summary:')
+    else:
+        Avalon.info(f'{peer.address} information summary:')
+    if peer.description:
+        print(f'Description: {peer.description}')
     if peer.address:
-        print('Address: {}'.format(peer.address))
+        print(f'Address: {peer.address}')
     if peer.public_address:
-        print('Public Address: {}'.format(peer.public_address))
+        print(f'Public Address: {peer.public_address}')
     if peer.listen_port:
-        print('Listen Port: {}'.format(peer.listen_port))
-    print('Private Key: {}'.format(peer.private_key))
+        print(f'Listen Port: {peer.listen_port}')
+    print(f'Private Key: {peer.private_key}')
     if peer.keep_alive:
-        print('Keep Alive: {}'.format(peer.keep_alive))
-    # print('Preshared Key: {}'.format(peer.preshared_key))
+        print(f'Keep Alive: {peer.keep_alive}')
+    # print(f'Preshared Key: {peer.preshared_key}')
 
 
 def add_peer():
@@ -265,7 +322,15 @@ def add_peer():
             preshared_key = wg.genpsk()
     peer = Peer(address, private_key, keep_alive, listen_port, preshared_key)
     """
-    peer = Peer(address, public_address, listen_port, private_key, keep_alive)
+
+    # Get peer alias
+    alias = Avalon.gets('Alias (optional): ')
+
+    # Get peer description
+    description = Avalon.gets('Description (optional): ')
+
+    # Create peer and append peer into the peers list
+    peer = Peer(address, public_address, listen_port, private_key, keep_alive=keep_alive, alias=alias, description=description)
     pm.peers.append(peer)
     print_peer_config(peer)
 
@@ -311,16 +376,20 @@ def generate_configs(output_path):
 
     # Iterate through all peers and generate configuration for each peer
     for peer in pm.peers:
-        Avalon.debug_info('Generating configuration file for {}'.format(peer.address))
-        with open('{}/{}.conf'.format(output_path, peer.address.split('/')[0]), 'w') as config:
+        Avalon.debug_info(f'Generating configuration file for {peer.address}')
+        with open(f'{output_path}/{peer.address.split("/")[0]}.conf', 'w') as config:
 
             # Write Interface configuration
             config.write('[Interface]\n')
-            config.write('PrivateKey = {}\n'.format(peer.private_key))
+            if peer.alias:
+                config.write(f'# Alias: {peer.alias}\n')
+            if peer.description:
+                config.write(f'# Description: {peer.description}\n')
+            config.write(f'PrivateKey = {peer.private_key}\n')
             if peer.address != '':
-                config.write('Address = {}\n'.format(peer.address))
+                config.write(f'Address = {peer.address}\n')
             if peer.listen_port != '':
-                config.write('ListenPort = {}\n'.format(peer.listen_port))
+                config.write(f'ListenPort = {peer.listen_port}\n')
 
             # Write peers' information
             for p in pm.peers:
@@ -329,25 +398,31 @@ def generate_configs(output_path):
                     continue
                 config.write('\n[Peer]\n')
                 print(p.private_key)
-                config.write('PublicKey = {}\n'.format(wg.pubkey(p.private_key)))
-                config.write('AllowedIPs = {}\n'.format(p.address))
+                if peer.alias:
+                    config.write(f'# Alias: {peer.alias}\n')
+                if peer.description:
+                    config.write(f'# Description: {peer.description}\n')
+                config.write(f'PublicKey = {wg.pubkey(p.private_key)}\n')
+                config.write(f'AllowedIPs = {p.address}\n')
                 if p.public_address != '':
-                    config.write('Endpoint = {}:{}\n'.format(p.public_address, p.listen_port))
+                    config.write(f'Endpoint = {p.public_address}:{p.listen_port}\n')
                 if peer.keep_alive:
                     config.write('PersistentKeepalive = 25\n')
                 if p.preshared_key:
-                    config.write('PresharedKey = {}\n'.format(p.preshared_key))
+                    config.write(f'PresharedKey = {p.preshared_key}\n')
 
 
 def print_help():
     """ Print help messages
     """
     help_lines = [
-        '\n{}Commands are not case-sensitive{}'.format(Avalon.FM.BD, Avalon.FM.RST),
+        f'\n{Avalon.FM.BD}Commands are not case-sensitive{Avalon.FM.RST}',
         'Interactive  // launch interactive shell',
         'ShowPeers  // show all peer information',
-        'LoadProfile [profile path]  // load profile from profile_path',
-        'SaveProfile [profile path]  // save profile to profile_path',
+        'JSONLoadProfile [profile path]  // load profile from profile_path (JSON format)',
+        'JSONSaveProfile [profile path]  // save profile to profile_path (JSON format)',
+        'PickleLoadProfile [profile path]  // load profile from profile_path (Pickle format)',
+        'PickleSaveProfile [profile path]  // save profile to profile_path (Pickle format)',
         'NewProfile  // create new profile',
         'AddPeers  // add a new peer into the current profile',
         'DeletePeer  // delete a peer from the current profile',
@@ -382,10 +457,14 @@ def command_interpreter(commands):
             for peer in pm.peers:
                 print_peer_config(peer)
             result = 0
-        elif commands[1].lower() == 'loadprofile':
-            result = pm.load_profile(commands[2])
-        elif commands[1].lower() == 'saveprofile':
-            result = pm.save_profile(commands[2])
+        elif commands[1].lower() == 'jsonloadprofile':
+            result = pm.json_load_profile(commands[2])
+        elif commands[1].lower() == 'jsonsaveprofile':
+            result = pm.json_save_profile(commands[2])
+        elif commands[1].lower() == 'pickleloadprofile':
+            result = pm.pickle_load_profile(commands[2])
+        elif commands[1].lower() == 'picklesaveprofile':
+            result = pm.pickle_save_profile(commands[2])
         elif commands[1].lower() == 'newprofile':
             result = pm.new_profile()
         elif commands[1].lower() == 'addpeer':
@@ -398,7 +477,7 @@ def command_interpreter(commands):
             Avalon.warning('Exiting')
             exit(0)
         elif len(possibilities) > 0:
-            Avalon.warning('Ambiguous command \"{}\"'.format(commands[1]))
+            Avalon.warning(f'Ambiguous command \"{commands[1]}\"')
             print('Use \"Help\" command to list available commands')
             result = 1
         else:
@@ -434,7 +513,7 @@ def main():
             readline.set_completer(completer.complete)
             readline.parse_and_bind('tab: complete')
             # Launch interactive trojan shell
-            prompt = '{}[WGC]> {}'.format(Avalon.FM.BD, Avalon.FM.RST)
+            prompt = f'{Avalon.FM.BD}[WGC]> {Avalon.FM.RST}'
             while True:
                 command_interpreter([''] + input(prompt).split(' '))
         else:
