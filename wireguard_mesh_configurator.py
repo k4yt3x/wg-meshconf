@@ -81,7 +81,7 @@ class Peer:
     the wireguard mesh network.
     """
 
-    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=None, alias=None, description=None):
+    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=None, alias=None, description=None, postup=None):
         self.address = address
         self.public_address = public_address
         self.listen_port = listen_port
@@ -90,6 +90,7 @@ class Peer:
         self.preshared_key = preshared_key
         self.alias = alias
         self.description = description
+        self.postup = postup
 
 
 class WireGuard:
@@ -190,7 +191,7 @@ class ProfileManager(object):
             profile.close()
         
         for p in loaded_profiles['peers']:
-            peer = Peer(p['address'], p['public_address'], p['listen_port'], p['private_key'], keep_alive=p['keep_alive'], alias=p['alias'], description=p['description'])
+            peer = Peer(p['address'], p['public_address'], p['listen_port'], p['private_key'], keep_alive=p['keep_alive'], alias=p['alias'], description=p['description'], postup=p['postup'])
             pm.peers.append(peer)
 
     def json_save_profile(self, profile_path):
@@ -242,6 +243,7 @@ def print_welcome():
     """
     print(f'WireGuard Mesh Configurator {VERSION}')
     print('(C) 2018-2019 K4YT3X')
+    print('(C) 2019 adeepv')
     print('Licensed under GNU GPL v3')
 
 
@@ -265,6 +267,8 @@ def print_peer_config(peer):
     print(f'Private Key: {peer.private_key}')
     if peer.keep_alive:
         print(f'Keep Alive: {peer.keep_alive}')
+    if peer.postup:
+        print(f'PostUp: {peer.postup}')
     # print(f'Preshared Key: {peer.preshared_key}')
 
 
@@ -309,6 +313,8 @@ def add_peer():
     if private_key == '':
         private_key = wg.genkey()
 
+    postup = Avalon.gets('PostUP: ')
+
     # Ask if this peer needs to be actively connected
     # if peer is behind NAT and needs to be accessed actively
     # PersistentKeepalive must be turned on (!= 0)
@@ -330,7 +336,7 @@ def add_peer():
     description = Avalon.gets('Description (optional): ')
 
     # Create peer and append peer into the peers list
-    peer = Peer(address, public_address, listen_port, private_key, keep_alive=keep_alive, alias=alias, description=description)
+    peer = Peer(address, public_address, listen_port, private_key, keep_alive=keep_alive, alias=alias, description=description,postup=postup)
     pm.peers.append(peer)
     print_peer_config(peer)
 
@@ -387,7 +393,8 @@ def generate_configs(output_path):
                 config.write(f'# Description: {peer.description}\n')
             config.write(f'PrivateKey = {peer.private_key}\n')
             if peer.address != '':
-                config.write(f'Address = {peer.address}\n')
+                addr=peer.address.split(',')[0]
+                config.write(f'Address = {addr}\n')
             if peer.listen_port != '':
                 config.write(f'ListenPort = {peer.listen_port}\n')
 
@@ -410,6 +417,8 @@ def generate_configs(output_path):
                     config.write('PersistentKeepalive = 25\n')
                 if p.preshared_key:
                     config.write(f'PresharedKey = {p.preshared_key}\n')
+                if p.postup:
+                    config.write(f'PostUp = {p.postup}\n')
 
 
 def print_help():
