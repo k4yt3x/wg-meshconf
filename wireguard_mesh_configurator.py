@@ -191,6 +191,8 @@ class ProfileManager(object):
             profile.close()
         
         for p in loaded_profiles['peers']:
+            if not p[postup]:
+                p['postup'] = None
             peer = Peer(p['address'], p['public_address'], p['listen_port'], p['private_key'], keep_alive=p['keep_alive'], alias=p['alias'], description=p['description'], postup=p['postup'])
             pm.peers.append(peer)
 
