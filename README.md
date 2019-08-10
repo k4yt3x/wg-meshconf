@@ -4,6 +4,18 @@
 
 `wg-dynamic` is a tool designed officially by WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic)).
 
+## 1.3.0 (August 10, 2019)
+
+- Changed Peer object read and write method
+  - Now using `peer.__dict__` instead of receiving values in object constructor
+- Added new wg-quick fields
+  - Table
+  - PreUp
+  - PostUp
+  - PreDown
+  - PostDown
+- Peer configuration now separated into basic and advanced configurations
+
 ## 1.2.0 (May 16, 2019)
 
 - You can now set Aliases and Descriptions for peers.
