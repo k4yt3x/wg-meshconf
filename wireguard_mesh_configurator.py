@@ -100,8 +100,7 @@ class ShellCompleter(object):
     def complete(self, text, state):
         if state == 0:
             if text:
-                self.matches = [
-                    s for s in self.options if s and s.lower().startswith(text.lower())]
+                self.matches = [s for s in self.options if s and s.lower().startswith(text.lower())]
             else:
                 self.matches = self.options[:]
         try:
@@ -384,14 +383,23 @@ def add_peer():
     # Get peer description
     peer_config['# Description'] = Avalon.gets('Description (optional): ')
 
-    # get peer table
-    peer_config['Table'] = Avalon.gets('Table (optional): ')
+    # start advanced configurations
+    if Avalon.ask('Enter advanced configurations?'):
 
-    # get peer postup
-    peer_config['PostUp'] = Avalon.gets('PostUp (optional): ')
+        # get peer table
+        peer_config['Table'] = Avalon.gets('Table (optional): ')
 
-    # get peer predown
-    peer_config['PreDown'] = Avalon.gets('PreDown (optional): ')
+        # get peer preup
+        peer_config['PreUp'] = Avalon.gets('PreUp (optional): ')
+
+        # get peer postup
+        peer_config['PostUp'] = Avalon.gets('PostUp (optional): ')
+
+        # get peer predown
+        peer_config['PreDown'] = Avalon.gets('PreDown (optional): ')
+
+        # get peer predown
+        peer_config['PostDown'] = Avalon.gets('PostDown (optional): ')
 
     # Create peer and append peer into the peers list
     peer = Peer()
@@ -497,6 +505,8 @@ def print_help():
         'ShowPeers  // show all peer information',
         'JSONLoadProfile [profile path]  // load profile from profile_path (JSON format)',
         'JSONSaveProfile [profile path]  // save profile to profile_path (JSON format)',
+        'PickleLoadProfile [profile path]  // load profile from profile_path (Pickle format)',
+        'PickleSaveProfile [profile path]  // save profile to profile_path (Pickle format)',
         'NewProfile  // create new profile',
         'AddPeers  // add a new peer into the current profile',
         'DeletePeer  // delete a peer from the current profile',
