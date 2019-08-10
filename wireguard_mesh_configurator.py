@@ -4,15 +4,21 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: May 16, 2019
+Last Modified: August 10, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018-2019 K4YT3X
+
+TODO
+- Add private key input validation
+- Make either Address or Alias mandatory
 """
-from avalon_framework import Avalon
+
+# built-in imports
 import json
 import os
+import pathlib
 import pickle
 import re
 import readline
@@ -20,7 +26,10 @@ import subprocess
 import sys
 import traceback
 
-VERSION = '1.2.0'
+# third-party imports
+from avalon_framework import Avalon
+
+VERSION = '1.3.0'
 COMMANDS = [
     'Interactive',
     'ShowPeers',
@@ -34,6 +43,32 @@ COMMANDS = [
     'GenerateConfigs',
     'Exit',
     'Quit',
+]
+
+# attributes that should be written into the
+# [Interface] section of the configuration file
+LOCAL_ATTRIBUTES = [
+    'Address',
+    'PrivateKey',
+    'ListenPort',
+    'DNS',
+    'MTU',
+    'Table',
+    'PreUp',
+    'PostUp',
+    'PreDown',
+    'PostDown',
+    'SaveConfig'
+]
+
+# attributes that should be written into the
+# [Peer] section of the configuration file
+PEER_ATTRIBUTES = [
+    'PublicKey',
+    'AllowedIPs',
+    'Endpoint',
+    'PersistentKeepalive',
+    'PresharedKey'
 ]
 
 
@@ -65,7 +100,8 @@ class ShellCompleter(object):
     def complete(self, text, state):
         if state == 0:
             if text:
-                self.matches = [s for s in self.options if s and s.lower().startswith(text.lower())]
+                self.matches = [
+                    s for s in self.options if s and s.lower().startswith(text.lower())]
             else:
                 self.matches = self.options[:]
         try:
@@ -81,15 +117,28 @@ class Peer:
     the wireguard mesh network.
     """
 
-    def __init__(self, address, public_address, listen_port, private_key, keep_alive, preshared_key=None, alias=None, description=None):
-        self.address = address
+    def __init__(self):
+        pass
+        """
+        # mandatory fields
+        self.private_key = private_key
+
+        # optional fields
+        for key in kwargs:
+            self.__dict__.update(key, kwargs[key])
+
+        self.private_key = private_key
+        self.Address = address
         self.public_address = public_address
         self.listen_port = listen_port
-        self.private_key = private_key
         self.keep_alive = keep_alive
-        self.preshared_key = preshared_key
-        self.alias = alias
-        self.description = description
+        self.preshared_key = kwargs.get('preshared_key')
+        self.alias = kwargs.get('alias')
+        self.description = kwargs.get('description')
+        self.table = kwargs.get('table')
+        self.postup = kwargs.get('postup')
+        self.predown = kwargs.get('predown')
+        """
 
 
 class WireGuard:
@@ -103,8 +152,8 @@ class WireGuard:
     - genpsk
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, wg_binary='wg'):
+        self.wg_binary = wg_binary
 
     def genkey(self):
         """ Generate WG private key
@@ -112,20 +161,20 @@ class WireGuard:
         Generate a new wireguard private key via
         wg command.
         """
-        return Utilities.execute(['wg', 'genkey'])
+        return Utilities.execute([self.wg_binary, 'genkey'])
 
-    def pubkey(self, public_key):
+    def pubkey(self, private_key):
         """ Convert WG private key into public key
 
         Uses wg pubkey command to convert the wg private
         key into a public key.
         """
-        return Utilities.execute(['wg', 'pubkey'], input_value=public_key.encode('utf-8'))
+        return Utilities.execute([self.wg_binary, 'pubkey'], input_value=private_key.encode('utf-8'))
 
     def genpsk(self):
         """ Generate a random base64 psk
         """
-        return Utilities.execute(['wg', 'genpsk'])
+        return Utilities.execute([self.wg_binary, 'genpsk'])
 
 
 class ProfileManager(object):
@@ -142,19 +191,16 @@ class ProfileManager(object):
 
     def pickle_load_profile(self, profile_path):
         """ Load profile from a file
-
-        Open the pickle file, deserialize the content and
+        Open the pickle file, de-serialize the content and
         load it back into the profile manager.
         """
         self.peers = []
         Avalon.debug_info(f'Loading profile from: {profile_path}')
         with open(profile_path, 'rb') as profile:
             pm.peers = pickle.load(profile)
-            profile.close()
 
     def pickle_save_profile(self, profile_path):
         """ Save current profile to a file
-
         Serializes the current profile with pickle
         and dumps it into a file.
         """
@@ -177,7 +223,7 @@ class ProfileManager(object):
         with open(profile_path, 'wb') as profile:
             pickle.dump(pm.peers, profile)
             profile.close()
-    
+
     def json_load_profile(self, profile_path):
         """ Load profile to JSON file
 
@@ -187,30 +233,33 @@ class ProfileManager(object):
         Avalon.debug_info(f'Loading profile from: {profile_path}')
         with open(profile_path, 'rb') as profile:
             loaded_profiles = json.load(profile)
-            profile.close()
-        
+
         for p in loaded_profiles['peers']:
-            peer = Peer(p['address'], p['public_address'], p['listen_port'], p['private_key'], keep_alive=p['keep_alive'], alias=p['alias'], description=p['description'])
+            peer = Peer()
+            peer.__dict__.update(p)
             pm.peers.append(peer)
 
     def json_save_profile(self, profile_path):
         """ Save current profile to a JSON file
         """
 
-        # If profile already exists (file or link), ask the user if
-        # we should overwrite it.
-        if os.path.isfile(profile_path) or os.path.islink(profile_path):
-            if not Avalon.ask('File already exists. Overwrite?', True):
-                Avalon.warning('Aborted saving profile')
-                return 1
+        # convert profile_path into pathlib.Path object
+        profile_path = pathlib.Path(profile_path)
 
-        # Abort if profile_path points to a directory
-        if os.path.isdir(profile_path):
+        # abort if profile_path points to a directory
+        if profile_path.is_dir():
             Avalon.warning('Destination path is a directory')
             Avalon.warning('Aborted saving profile')
             return 1
 
-        # Finally, write the profile into the destination file
+        # if profile already exists (file or link)
+        # ask the user if we should overwrite it
+        if profile_path.exists():
+            if not Avalon.ask('File already exists. Overwrite?', True):
+                Avalon.warning('Aborted saving profile')
+                return 1
+
+        # finally, write the profile into the destination file
         Avalon.debug_info(f'Writing profile to: {profile_path}')
 
         peers_dict = {}
@@ -250,22 +299,20 @@ def print_peer_config(peer):
 
     Input takes one Peer object.
     """
-    if peer.alias:
-        Avalon.info(f'{peer.alias} information summary:')
-    else:
-        Avalon.info(f'{peer.address} information summary:')
-    if peer.description:
-        print(f'Description: {peer.description}')
-    if peer.address:
-        print(f'Address: {peer.address}')
-    if peer.public_address:
-        print(f'Public Address: {peer.public_address}')
-    if peer.listen_port:
-        print(f'Listen Port: {peer.listen_port}')
-    print(f'Private Key: {peer.private_key}')
-    if peer.keep_alive:
-        print(f'Keep Alive: {peer.keep_alive}')
-    # print(f'Preshared Key: {peer.preshared_key}')
+    if peer.__dict__.get('# Alias'):
+        Avalon.info(f'{peer.__dict__["# Alias"]} information summary:')
+    elif peer.__dict__.get('Address'):
+        Avalon.info(f'{peer.Address} information summary:')
+
+    for key in peer.__dict__:
+        if isinstance(key, str) and key.startswith('#'):
+            print(f'{key}: {peer.__dict__[key]}')
+
+    for key in peer.__dict__:
+        if peer.__dict__[key] != '' and peer.__dict__[key] is not None:
+            if isinstance(key, str) and key.startswith('#'):
+                continue
+            print(f'{key} = {peer.__dict__[key]}')
 
 
 def add_peer():
@@ -275,6 +322,24 @@ def add_peer():
     new Peer class object.
     """
 
+    # initialize empty dict for peer configuration
+    peer_config = {}
+
+    # Get peer private key
+    while True:
+        peer_config['PrivateKey'] = Avalon.gets('Private key (leave empty for auto generation): ')
+        if peer_config['PrivateKey'] == '':
+            peer_config['PrivateKey'] = wg.genkey()
+
+        # generate public key from private key
+        peer_config['PublicKey'] = wg.pubkey(peer_config['PrivateKey'])
+
+        # if there's no pubkey generated, input is invalid
+        if peer_config['PublicKey'] != '':
+            break
+
+        Avalon.error('Invalid private key format')
+
     # Get peer tunnel address
     while True:
         address = Avalon.gets('Address (leave empty if client only) [IP/CIDR]: ')
@@ -283,10 +348,12 @@ def add_peer():
             Avalon.error('Please use CIDR notation (e.g. 10.0.0.0/8)')
             continue
         break
+    peer_config['Address'] = address
 
     # Get peer public IP address
     while True:
-        public_address = Avalon.gets('Public address (leave empty if client only) [IP|FQDN]: ')
+        public_address = Avalon.gets(
+            'Public address (leave empty if client only) [IP|FQDN]: ')
 
         # Check if public_address is valid IP or FQDN
         valid_address = False
@@ -300,37 +367,36 @@ def add_peer():
             Avalon.error('Please enter an IP address or FQDN')
             continue
         break
+    peer_config['Endpoint'] = public_address
 
     # Get peer listening port
-    listen_port = Avalon.gets('Listen port (leave empty for client) [1-65535]: ')
-
-    # Get peer private key
-    private_key = Avalon.gets('Private key (leave empty for auto generation): ')
-    if private_key == '':
-        private_key = wg.genkey()
+    peer_config['ListenPort'] = Avalon.gets(
+        'Listen port (leave empty for client) [1-65535]: ')
 
     # Ask if this peer needs to be actively connected
     # if peer is behind NAT and needs to be accessed actively
     # PersistentKeepalive must be turned on (!= 0)
-    keep_alive = Avalon.ask('Keep alive?', False)
-
-    """
-    preshared_key = False
-    if Avalon.ask('Use a preshared key?', True):
-        preshared_key = Avalon.gets('Preshared Key (leave empty for auto generation): ')
-        if preshared_key == '':
-            preshared_key = wg.genpsk()
-    peer = Peer(address, private_key, keep_alive, listen_port, preshared_key)
-    """
+    peer_config['PersistentKeepalive'] = Avalon.ask('Keep alive?', False)
 
     # Get peer alias
-    alias = Avalon.gets('Alias (optional): ')
+    peer_config['# Alias'] = Avalon.gets('Alias (optional): ')
 
     # Get peer description
-    description = Avalon.gets('Description (optional): ')
+    peer_config['# Description'] = Avalon.gets('Description (optional): ')
+
+    # get peer table
+    peer_config['Table'] = Avalon.gets('Table (optional): ')
+
+    # get peer postup
+    peer_config['PostUp'] = Avalon.gets('PostUp (optional): ')
+
+    # get peer predown
+    peer_config['PreDown'] = Avalon.gets('PreDown (optional): ')
 
     # Create peer and append peer into the peers list
-    peer = Peer(address, public_address, listen_port, private_key, keep_alive=keep_alive, alias=alias, description=description)
+    peer = Peer()
+    peer.__dict__.update(peer_config)
+
     pm.peers.append(peer)
     print_peer_config(peer)
 
@@ -341,7 +407,7 @@ def delete_peer(address):
     Delete a specific peer from the peer list.
     """
     for peer in pm.peers:
-        if peer.address == address:
+        if peer.Address == address:
             pm.peers.remove(peer)
 
 
@@ -352,6 +418,10 @@ def generate_configs(output_path):
     configuration file for every peer, and export into
     the CONFIG_OUTPUT directory.
     """
+
+    # convert output_path into pathlib.Path object
+    output_path = pathlib.Path(output_path)
+
     if len(pm.peers) == 0:
         Avalon.warning('No peers configured, exiting')
         exit(0)
@@ -361,55 +431,61 @@ def generate_configs(output_path):
     Avalon.info('Generating configuration files')
 
     # Abort is destination is a file / link
-    if os.path.isfile(output_path) or os.path.islink(output_path):
+    if output_path.is_file() or output_path.is_symlink():
         Avalon.warning('Destination path is a file / link')
         Avalon.warning('Aborting configuration generation')
         return 1
 
     # Ask if user wants to create the output directory if it doesn't exist
-    if not os.path.isdir(output_path):
+    if not output_path.is_dir():
         if Avalon.ask('Output directory doesn\'t exist. Create output directory?', True):
-            os.mkdir(output_path)
+            output_path.mkdir(parents=True, exist_ok=True)
         else:
             Avalon.warning('Aborting configuration generation')
             return 1
 
-    # Iterate through all peers and generate configuration for each peer
+    # iterate through all peers and generate configuration for each peer
     for peer in pm.peers:
-        Avalon.debug_info(f'Generating configuration file for {peer.address}')
-        with open(f'{output_path}/{peer.address.split("/")[0]}.conf', 'w') as config:
+        Avalon.debug_info(f'Generating configuration file for {peer.Address}')
+        with open(output_path / f'{peer.Address.split("/")[0]}.conf', 'w') as config:
 
-            # Write Interface configuration
+            # write Interface configuration
             config.write('[Interface]\n')
-            if peer.alias:
-                config.write(f'# Alias: {peer.alias}\n')
-            if peer.description:
-                config.write(f'# Description: {peer.description}\n')
-            config.write(f'PrivateKey = {peer.private_key}\n')
-            if peer.address != '':
-                config.write(f'Address = {peer.address}\n')
-            if peer.listen_port != '':
-                config.write(f'ListenPort = {peer.listen_port}\n')
+
+            # write all comment keys
+            for key in peer.__dict__:
+
+                # if value is non-standard comment
+                if key.startswith('#'):
+                    config.write(f'{key}: {peer.__dict__[key]}\n')
+
+            # write all keys and values
+            for key in [p for p in peer.__dict__ if p in LOCAL_ATTRIBUTES]:
+
+                # if value is not empty string or None
+                if peer.__dict__[key] != '' and peer.__dict__[key] is not None:
+                    if key.startswith('#'):
+                        continue
+                    config.write(f'{key} = {peer.__dict__[key]}\n')
 
             # Write peers' information
             for p in pm.peers:
-                if p.address == peer.address:
+                if p.Address == peer.Address:
                     # Skip if peer is self
                     continue
+
                 config.write('\n[Peer]\n')
-                print(p.private_key)
-                if peer.alias:
-                    config.write(f'# Alias: {peer.alias}\n')
-                if peer.description:
-                    config.write(f'# Description: {peer.description}\n')
-                config.write(f'PublicKey = {wg.pubkey(p.private_key)}\n')
-                config.write(f'AllowedIPs = {p.address}\n')
-                if p.public_address != '':
-                    config.write(f'Endpoint = {p.public_address}:{p.listen_port}\n')
-                if peer.keep_alive:
-                    config.write('PersistentKeepalive = 25\n')
-                if p.preshared_key:
-                    config.write(f'PresharedKey = {p.preshared_key}\n')
+
+                for k in p.__dict__:
+                    if k.startswith('#'):
+                        config.write(f'{k}: {p.__dict__[k]}\n')
+
+                # if value is not empty string or None
+                for k in [p for p in p.__dict__ if p in PEER_ATTRIBUTES]:
+                    if p.__dict__[k] != '' and p.__dict__[k] is not None:
+                        if k.startswith('#'):
+                            continue
+                        config.write(f'{k} = {p.__dict__[k]}\n')
 
 
 def print_help():
@@ -421,15 +497,12 @@ def print_help():
         'ShowPeers  // show all peer information',
         'JSONLoadProfile [profile path]  // load profile from profile_path (JSON format)',
         'JSONSaveProfile [profile path]  // save profile to profile_path (JSON format)',
-        'PickleLoadProfile [profile path]  // load profile from profile_path (Pickle format)',
-        'PickleSaveProfile [profile path]  // save profile to profile_path (Pickle format)',
         'NewProfile  // create new profile',
         'AddPeers  // add a new peer into the current profile',
         'DeletePeer  // delete a peer from the current profile',
         'GenerateConfigs [output directory]  // generate configuration files',
         'Exit',
-        'Quit',
-        '',
+        'Quit'
     ]
     for line in help_lines:
         print(line)
@@ -444,7 +517,8 @@ def command_interpreter(commands):
     """
     try:
         # Try to guess what the user is saying
-        possibilities = [s for s in COMMANDS if s.lower().startswith(commands[1])]
+        possibilities = [
+            s for s in COMMANDS if s.lower().startswith(commands[1])]
         if len(possibilities) == 1:
             commands[1] = possibilities[0]
 
@@ -456,6 +530,7 @@ def command_interpreter(commands):
         elif commands[1].lower() == 'showpeers':
             for peer in pm.peers:
                 print_peer_config(peer)
+                print()  # print an empty line
             result = 0
         elif commands[1].lower() == 'jsonloadprofile':
             result = pm.json_load_profile(commands[2])
