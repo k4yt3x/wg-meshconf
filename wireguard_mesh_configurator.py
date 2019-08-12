@@ -387,6 +387,9 @@ def add_peer():
     if Avalon.ask('Enter advanced configurations?'):
 
         # get peer table
+        peer_config['AllowedIPs'] = Avalon.gets('AllowedIPs (optional): ')
+
+        # get peer table
         peer_config['Table'] = Avalon.gets('Table (optional): ')
 
         # get peer preup
