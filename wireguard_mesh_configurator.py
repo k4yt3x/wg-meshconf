@@ -4,7 +4,7 @@
 Name: Wireguard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: August 10, 2019
+Last Modified: September 10, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -326,9 +326,7 @@ def add_peer():
 
     # Get peer private key
     while True:
-        peer_config['PrivateKey'] = Avalon.gets('Private key (leave empty for auto generation): ')
-        if peer_config['PrivateKey'] == '':
-            peer_config['PrivateKey'] = wg.genkey()
+        peer_config['PrivateKey'] = Avalon.gets('Private key (leave empty for auto generation): ', default=wg.genkey())
 
         # generate public key from private key
         peer_config['PublicKey'] = wg.pubkey(peer_config['PrivateKey'])
@@ -351,8 +349,7 @@ def add_peer():
 
     # Get peer public IP address
     while True:
-        public_address = Avalon.gets(
-            'Public address (leave empty if client only) [IP|FQDN]: ')
+        public_address = Avalon.gets('Public address (leave empty if client only) [IP|FQDN]: ')
 
         # Check if public_address is valid IP or FQDN
         valid_address = False
@@ -369,8 +366,7 @@ def add_peer():
     peer_config['Endpoint'] = public_address
 
     # Get peer listening port
-    peer_config['ListenPort'] = Avalon.gets(
-        'Listen port (leave empty for client) [1-65535]: ')
+    peer_config['ListenPort'] = Avalon.gets('Listen port (leave empty for client) [1-65535]: ')
 
     # Ask if this peer needs to be actively connected
     # if peer is behind NAT and needs to be accessed actively
