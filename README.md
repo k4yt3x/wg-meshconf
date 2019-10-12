@@ -6,9 +6,11 @@
 
 ## 1.3.0 (August 10, 2019)
 
+- Complete rebuild of project code structure
 - Changed Peer object read and write method
   - Now using `peer.__dict__` instead of receiving values in object constructor
 - Added new wg-quick fields
+  - AllowedIPs
   - Table
   - PreUp
   - PostUp
