@@ -45,7 +45,7 @@ LOCAL_ATTRIBUTES = [
 PEER_ATTRIBUTES = [
     'PublicKey',
     'AllowedIPs',
-    'Endpoint',
+    # 'Endpoint',
     'PersistentKeepalive',
     'PresharedKey'
 ]
@@ -367,6 +367,10 @@ class ProfileManager(object):
                     for k in p.__dict__:
                         if k.startswith('#'):
                             config.write(f'{k}: {p.__dict__[k]}\n')
+
+                    # write endpoint information separately
+                    # since it has a different format
+                    config.write(f'Endpoint = {p.__dict__["public_address"]}:{p.__dict__["listen_port"]}\n')
 
                     # if value is not empty string or None
                     for k in [p for p in p.__dict__ if p in PEER_ATTRIBUTES]:
