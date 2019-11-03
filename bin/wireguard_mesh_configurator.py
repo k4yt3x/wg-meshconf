@@ -4,7 +4,7 @@
 Name: WireGuard Mesh Configurator
 Dev: K4YT3X
 Date Created: October 10, 2018
-Last Modified: October 12, 2019
+Last Modified: November 2, 2019
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -27,13 +27,15 @@ from wmcshell import WMCShell
 
 VERSION = '1.3.0'
 
+LEGAL_INFO = f'''WireGuard Mesh Configurator {VERSION}
+(C) 2018-2019 K4YT3X
+Licensed under GNU GPL v3\n'''
+
 
 def print_welcome():
     """ Print program name and legal information
     """
-    print(f'''WireGuard Mesh Configurator {VERSION}
-(C) 2018-2019 K4YT3X
-Licensed under GNU GPL v3\n''')
+    print(LEGAL_INFO)
 
 
 # if the file is not being imported
