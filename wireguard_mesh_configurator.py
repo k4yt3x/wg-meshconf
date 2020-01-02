@@ -398,10 +398,10 @@ def generate_configs(output_path):
                     continue
                 config.write('\n[Peer]\n')
                 print(p.private_key)
-                if peer.alias:
-                    config.write(f'# Alias: {peer.alias}\n')
-                if peer.description:
-                    config.write(f'# Description: {peer.description}\n')
+                if p.alias:
+                    config.write(f'# Alias: {p.alias}\n')
+                if p.description:
+                    config.write(f'# Description: {p.description}\n')
                 config.write(f'PublicKey = {wg.pubkey(p.private_key)}\n')
                 config.write(f'AllowedIPs = {p.address}\n')
                 if p.public_address != '':
