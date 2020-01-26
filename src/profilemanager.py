@@ -370,7 +370,7 @@ class ProfileManager(object):
 
                     # write endpoint information separately
                     # since it has a different format
-                    config.write(f'Endpoint = {p.__dict__["public_address"]}:{p.__dict__["listen_port"]}\n')
+                    config.write(f'Endpoint = {p.__dict__["Endpoint"]}:{p.__dict__["ListenPort"]}\n')
 
                     # if value is not empty string or None
                     for k in [p for p in p.__dict__ if p in PEER_ATTRIBUTES]:
