@@ -1,2 +1,0 @@
-avalon_framework >= 1.8.2
-netaddr >= 0.7.19

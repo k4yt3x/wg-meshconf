@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Name: WireGuard Utility Controller
+Name: WireGuard Python Bindings
 Dev: K4YT3X
 Date Created: October 11, 2019
-Last Modified: October 12, 2019
+Last Modified: July 19, 2020
 """
 
 # built-in imports
 import pathlib
-import shutil
-
-# local imports
-from utilities import Utilities
+import subprocess
 
 
 class WireGuard:
@@ -26,10 +23,14 @@ class WireGuard:
     - genpsk
     """
 
-    def __init__(self, wg_binary=pathlib.Path(shutil.which('wg'))):
+    def __init__(self, wg_binary=pathlib.Path("/usr/bin/wg")):
         """
         Keyword Arguments:
-            wg_binary {pathlib.Path} -- path of wg binary (default: {pathlib.Path(shutil.which('wg'))})
+            wg_binary {pathlib.Path} -- path of wg binary (default: {pathlib.Path("/usr/bin/wg")})
+
+        Since the script might have to be run as root, it is bad practice to find wg using
+        pathlib.Path(shutil.which("wg") since a malicious binary named wg can be under the current
+        directory to intercept root privilege if SUID permission is given to the script.
         """
         self.wg_binary = wg_binary
 
@@ -39,23 +40,48 @@ class WireGuard:
         Generate a new wireguard private key via
         wg command.
         """
-        return Utilities.execute([self.wg_binary, 'genkey'])
+        return (
+            subprocess.run(
+                [str(self.wg_binary.absolute()), "genkey"],
+                check=True,
+                stdout=subprocess.PIPE,
+            )
+            .stdout.decode()
+            .strip()
+        )
 
-    def pubkey(self, private_key: str) -> str:
+    def pubkey(self, privkey: str) -> str:
         """  convert WG private key into public key
 
         Uses wg pubkey command to convert the wg private
         key into a public key.
 
         Arguments:
-            private_key {str} -- wg privkey
+            privkey {str} -- wg privkey
 
         Returns:
             str -- pubkey derived from privkey
         """
-        return Utilities.execute([self.wg_binary, 'pubkey'], input_value=private_key.encode('utf-8'))
+        return (
+            subprocess.run(
+                [str(self.wg_binary.absolute()), "pubkey"],
+                check=True,
+                stdout=subprocess.PIPE,
+                input=privkey.encode("utf-8"),
+            )
+            .stdout.decode()
+            .strip()
+        )
 
     def genpsk(self):
-        """ generate a random base64 psk
+        """ generate a random base64 PSK
         """
-        return Utilities.execute([self.wg_binary, 'genpsk'])
+        return (
+            subprocess.run(
+                [str(self.wg_binary.absolute()), "genpsk"],
+                check=True,
+                stdout=subprocess.PIPE,
+            )
+            .stdout.decode()
+            .strip()
+        )
