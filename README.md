@@ -19,7 +19,33 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 
 It is highly recommended to install `prettytable` so you can get beautiful tabular display of peer information. If you choose not to install `prettytable`, only plaintext output will be available.
 
-Python packages can be installed via `pip3 install --user -Ur requirements.txt`.
+## Installation
+
+You can clone this repository using `git`.
+
+```shell
+git clone https://github.com/k4yt3x/wg-meshconf.git
+```
+
+Alternatively, you can download the [master branch's ZIP file](https://github.com/k4yt3x/wg-meshconf/archive/master.zip) and decompress it. You may use any program to download and decompress the ZIP file. The example below uses `wget` and `unzip` to do the job on Linux.
+
+```shell
+# download the master branch's ZIP file
+wget https://github.com/k4yt3x/wg-meshconf/archive/master.zip
+
+# decompress the ZIP file
+unzip wg-meshconf-master.zip
+```
+
+Then, you will need to install Python's dependencies.
+
+```shell
+# if you cloned this repository
+pip3 install --user -Ur wg-meshconf/src/requirements.txt
+
+# if you downloaded and decompressed the zip file
+pip3 install --user -Ur wg-meshconf-master/src/requirements.txt
+```
 
 ## Learn by an Example
 
