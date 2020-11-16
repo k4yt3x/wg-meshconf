@@ -14,9 +14,11 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 
 You used to have to install a bunch of other Python packages, but I cut them all off in version 2.0.0 to keep this software lightweight.
 
-## Learn By An Example
+## Learn by an Example
 
-This section will demonstrate how to create a simple mesh network with four nodes using wg-meshconf.
+Usages are dull and boring. Let's see a real-life example of how this tool can be used. This section will demonstrate how to create a simple mesh network with four nodes using wg-meshconf.
+
+For this example, suppose you have four servers as shown below. These servers can reach each other via the `Endpoint` address. For instance, server `tokyo1` can ping server `shanghai1` with the address `shanghai1.com`.
 
 ![image](https://user-images.githubusercontent.com/21986859/99200153-94839e80-279b-11eb-81c9-189b609661ee.png)
 
@@ -29,7 +31,8 @@ First we need to add all peers in the mesh network into the database. The basic 
 ```
 
 - New private key will be generated automatically if unspecified
-- ListenPort defaults to 51820
+- ListenPort defaults to 51820 per WireGuard standard
+- All other values are left empty by default
 
 There are more options which you can specify. Use the command `./wg-meshconf addpeer -h` for more details.
 
@@ -59,9 +62,56 @@ Start up the WireGuard interfaces using the `wg-quick` command. It is also possi
 
 ### Step 5: Verify Connectivity
 
-
+Verify that all endpoints have been configured properly and can connect to each other.
 
 ![image](https://user-images.githubusercontent.com/21986859/99202822-5e98e700-27a8-11eb-8bb2-3e0d2222258f.png)
+
+Done. Now a mesh network has been created between the four servers.
+
+## Updating Peer Information
+
+If you would like to update a peer's information, use the `updatepeer` command. The syntax of `updatepeer` is the same as that of the `addpeer` command. Instead of adding a new peer, this command overwrites values in existing entries.
+
+In the example below, suppose you would like to update `tokyo1`'s endpoint address and change it to `tokyo321.com`. Use the `updatepeer` command and specify the new endpoint to be `tokyo321.com`. This will overwrite `tokyo1`'s existing `Endpoint` value.
+
+![image](https://user-images.githubusercontent.com/21986859/99204025-3a3f0980-27ac-11eb-9159-0e40fc2eefeb.png)
+
+## Deleting Peers
+
+Use the `delpeer` command to delete peers. The syntax is `delpeer PEER_NAME`.
+
+This example below shows how to delete the peer `tokyo1` from the database.
+
+![image](https://user-images.githubusercontent.com/21986859/99204215-e123a580-27ac-11eb-93b1-d07345004fab.png)
+
+## Database Files
+
+Unlike 1.x.x versions of wg-meshconf, version 2.0.0 does not require the user to save or load profiles. Instead, all add peer, update peer and delete peer operations are file operations. The changes will be saved to the database file immediately. The database file to use can be specified via the `-d` or the `--database` option. If no database file is specified, `database.json` will be used.
+
+Database files are essentially just JSON files. Below is an example.
+
+```json
+{
+    "peers": {
+        "tokyo1": {
+            "PrivateKey": "8NgwtCjISH6tznAzj5e3ujr3llxgdrLzCje9U6mUD1c=",
+            "Address": [
+                "10.1.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "tokyo1.com"
+        },
+        "germany1": {
+            "PrivateKey": "GFtKAG0zhWfa3LxPOG/d9zN6OfZKjL1CTyZih4oUjlU=",
+            "Address": [
+                "10.2.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "germany1.com"
+        }
+    }
+}
+```
 
 ## Detailed Usages
 
