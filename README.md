@@ -2,237 +2,108 @@
 
 ## On the Horizon: `wg-dynamic`
 
-`wg-dynamic` is a tool designed officially by WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic)).
-
-## 1.3.0 (August 10, 2019)
-
-- Complete rebuild of project code structure
-- Changed Peer object read and write method
-  - Now using `peer.__dict__` instead of receiving values in object constructor
-- Added new wg-quick fields
-  - AllowedIPs
-  - Table
-  - PreUp
-  - PostUp
-  - PreDown
-  - PostDown
-- Peer configuration now separated into basic and advanced configurations
-
-## 1.2.0 (May 16, 2019)
-
-- You can now set Aliases and Descriptions for peers.
-- Profiles can now be saved and loaded in JSON format.
-
-## 1.1.7 (Feburary 20, 2019)
-
-- Public address can now be either FQDN or IP address, as requested by @KipourosV
+`wg-dynamic` is a tool designed officially by the WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic).
 
 ## Introduction
 
-WireGuard mesh configurator is a tool that will help you generating peer configuration files for wireguard mesh networks. You generate configuration files for a large amount of peers easily and quickly via this tool.
+wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks. You can easily and quickly create WireGuard mesh networks using this tool.
 
 ## Prerequisites
 
-### System Packages
+- Python 3
 
-|Package|Explanation|Example|
-|-|-|-|
-|ncurses dev package|Required by the installation of the Python `readline` library.|`libncurses5-dev` on Debian|
-
-### Python Libraries
-
-The following libraries can be installed easily through executing `pip3 install -r requirements.txt` under the root directory of this repository.
-
-|Package|Explanation|
-|-|-|
-|`avalon_framework`|Command line I/O library|
-|`readline`|For better interactive command line interface|
-|`netaddr`|For calculating IP addresses|
+You used to have to install a bunch of other Python packages, but I cut them all off in version 2.0.0 to keep this software lightweight.
 
 ## Learn By An Example
 
-In this section, we will be going through how to configure a mesh network with the topology shown below using wireguard mesh configurator (this tool, **WGC**).
+This section will demonstrate how to create a simple mesh network with four nodes using wg-meshconf.
 
-![example_topology](https://user-images.githubusercontent.com/21986859/47622988-edfbd080-dae1-11e8-97f6-ff8ef56ffecc.png)
+![image](https://user-images.githubusercontent.com/21986859/99200153-94839e80-279b-11eb-81c9-189b609661ee.png)
 
-### Step 1: Create a Profile
+### Step 1: Add Peers
 
-Launch the WGC interactive shell. This will be where you give instructions to WGC.
+First we need to add all peers in the mesh network into the database. The basic syntax for adding new peers is:
 
-```
-$ python3 wireguard_mesh_configurator.py int
-```
-
-Every profile in WGC contains a complete topology. To create a new mesh network, we start by creating a new profile. Once a profile is created, you will be prompted automatically to enroll new peers. This leads us to the next step.
-
-```
-[WGC]> new
+```shell
+./wg-meshconf addpeer NAME --address IP_ADDRESS --address IP_ADDRESS_2 --endpoint ENDPOINT
 ```
 
-![step1](https://user-images.githubusercontent.com/21986859/47623179-5d72bf80-dae4-11e8-9705-9158ea8f75c2.png)
+- New private key will be generated automatically if unspecified
+- ListenPort defaults to 51820
 
-### Step 2: Enroll Peers
+There are more options which you can specify. Use the command `./wg-meshconf addpeer -h` for more details.
 
-Now that a profile has already been created, we need to input peers' information into WGC, so it knows the layout of the network.
+After adding all the peers into the database, you can verify that they have all been added correctly via the `./wg-meshconf showpeers` command. The `simplify` switch here omits all columns with only `None`s.
 
-![enroll_peers](https://user-images.githubusercontent.com/21986859/47623237-526c5f00-dae5-11e8-823a-863e5372faa9.png)
+![image](https://user-images.githubusercontent.com/21986859/99202459-1dec9e00-27a7-11eb-8190-a5a3c6644d2a.png)
 
-### Step 3: Export Configurations
+### Step 2: Export Configuration Files
 
-Now that we have all the peers in the profile, it's time to export everything into wireguard configuration files. We can dump configuration files into a directory using the `GenerateConfigurations` command. The following command will dump all the configuration files into the `/tmp/wg` directory.
+Use the `genconfig` command to generate configuration files for all peers. You may also export configurations for only one peer by specifying the peer's name.
 
-```
-[WGC]> gen /tmp/wg
-```
+The configuration files will be named after the peers' names. By default, all configuration files are exported into a subdirectory named `output`. You can change this by specifying output directory using the `-o` or the `--output` option.
 
-![gen_config](https://user-images.githubusercontent.com/21986859/47623276-f8b86480-dae5-11e8-9c41-54bab4523031.png)
+![image](https://user-images.githubusercontent.com/21986859/99202483-352b8b80-27a7-11eb-8479-8749e945a81d.png)
 
-We can also take a look at the generated configuration files.
+### Step 3: Copy Configuration Files to Peers
 
-![generated_configs](https://user-images.githubusercontent.com/21986859/47623330-a3c91e00-dae6-11e8-84bd-85971b3092b3.png)
+Copy each of the configuration files to the corresponding peers.
 
-### Step 4: Copy Configuration Files to Endpoints
+![image](https://user-images.githubusercontent.com/21986859/99201225-e4fdfa80-27a1-11eb-9b27-6e684d30b784.png)
 
-With the configuration files generated, all that's left to do is to copy the configuration files to the endpoints. Copy each configuration to the corresponding device with any method you like (sftp, ftps, plain copy & paste, etc.).
+### Step 4: Start WireGuard Services
 
-Put the configuration file to `/etc/wireguard/wg0.conf` is recommended, since it will make us able to use the `wg-quick` command for express configuration.
+Start up the WireGuard interfaces using the `wg-quick` command. It is also possible to control WireGuard interfaces via WireGuard's `wg-quick@` systemd service. WireGuard status can be verified via the `wg` command after WireGuard interfaces are set up.
 
-### Step 5: Enable WireGuard and Apply the Configuration
+![image](https://user-images.githubusercontent.com/21986859/99202554-7459dc80-27a7-11eb-9e92-44cd02bdc2f7.png)
 
-Lets tell wireguard to create an interface with this configuration and make it a service, so the interface will be created as system is booted up.
+### Step 5: Verify Connectivity
 
-```
-$ sudo wg-quick up wg0
-$ sudo systemctl enable wg-quick@wg0
-```
 
-![apply_enable](https://user-images.githubusercontent.com/21986859/47623379-3f5a8e80-dae7-11e8-9350-555e61884691.png)
 
-You can then verify the wireguard status via the `wg` command.
-
-```
-$ sudo wg
-```
-
-![wg_status](https://user-images.githubusercontent.com/21986859/47623489-9ca30f80-dae8-11e8-9241-3c7421b982db.png)
-
-### Step 6: Saving and Loading Profiles
-
-We can save a profile for future use using the `SaveProfile` command. The following example will save the profile to `/home/k4yt3x/example.pkl`.
-
-```
-[WGC]> save /home/k4yt3x/example.pkl
-```
-
-To load the profile, just use the `LoadProfile` command.
-
-```
-[WGC]> load /home/k4yt3x/example.pkl
-```
-
-Then you can use `ShowPeers` command to verify that everything has been loaded correctly.
-
-```
-[WGC]> sh
-```
-
-![saving_loading](https://user-images.githubusercontent.com/21986859/47623453-2d2d2000-dae8-11e8-9c21-528a7d9acde0.png)
-
-That concludes the "Learn By An Example" section. Hope it helps.
+![image](https://user-images.githubusercontent.com/21986859/99202822-5e98e700-27a8-11eb-8bb2-3e0d2222258f.png)
 
 ## Detailed Usages
 
-### Installing WGC
+You may refer to the program's help page for usages. Use the `-h` switch or the `--help` switch to print the help page.
 
-Clone the repository and enter it.
+```shell
+$./wg-meshconf -h
+usage: wg-meshconf [-h] [-d DATABASE] {addpeer,updatepeer,delpeer,showpeers,genconfig} ...
 
-```
-$ git clone https://github.com/K4YT3X/wireguard-mesh-configurator.git
-$ cd wireguard-mesh-configurator/
-```
+positional arguments:
+  {addpeer,updatepeer,delpeer,showpeers,genconfig}
 
-Install Python 3 dependencies.
-
-```
-$ sudo pip3 install -r requirements.txt
-```
-
-Run the tool.
-
-```
-$ python3 wireguard_mesh_configurator.py interactive
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATABASE, --database DATABASE
+                        path where the database file is stored (default: database.json)
 ```
 
-or
+Specify `-h` or `--help` after a command to see this command's usages.
 
-```
-$ python3 wireguard_mesh_configurator.py int
-```
+```shell
+$./wg-meshconf addpeer -h
+usage: wg-meshconf addpeer [-h] --address ADDRESS [--endpoint ENDPOINT] [--privatekey PRIVATEKEY] [--listenport LISTENPORT] [--fwmark FWMARK] [--dns DNS] [--mtu MTU] [--table TABLE] [--preup PREUP] [--postup POSTUP] [--predown PREDOWN] [--postdown POSTDOWN] [--saveconfig] name
 
-### Creating A Profile
+positional arguments:
+  name                  Name used to identify this node
 
-Run the `NewProfile` command to create a new profile.
-
-```
-[WGC]> NewProfile  # Create new profile
-```
-
-Then the peer enrolling wizard will ask you for all the information needed for all the peers. Select `n` when being asked if you want to add a new peer to end the wizard.
-
-### Adding a Peer
-
-Use the `AddPeer` command to initialize the wizard of appending a new peer to the profile.
-
-```
-[WGC]> AddPeer
-```
-
-### Deleting a Peer
-
-Use the `DeletePeer` command to remove a peer from the profile.
-
-```
-[WGC]> DeletePeer [Peer Address (e.g. 10.0.0.1/8)]
-```
-
-### Generating Configurations
-
-Run the following command to dump your currently-loaded profile into configuration files and export them to `output path`.
-
-```
-[WGC]> GenerateConfigurations [output path]
-```
-
-### Viewing All Peers
-
-To view all the peers configurations in the current profile:
-
-```
-[WGC]> ShowPeers
-```
-
-### Saving / Loading Profiles
-
-To save a profile in JSON format:
-
-```
-[WGC]> JSONSaveProfile [output path]
-```
-
-To save a profile in Pickle format:
-
-```
-[WGC]> PickleSaveProfile [output path]
-```
-
-To load a profile in JSON format:
-
-```
-[WGC]> JSONLoadProfile [output path]
-```
-
-To load a profile in Pickle format:
-
-```
-[WGC]> PickleLoadProfile [output path]
+optional arguments:
+  -h, --help            show this help message and exit
+  --address ADDRESS     address of the server
+  --endpoint ENDPOINT   peer's public endpoint address
+  --privatekey PRIVATEKEY
+                        private key of server interface
+  --listenport LISTENPORT
+                        port to listen on
+  --fwmark FWMARK       fwmark for outgoing packets
+  --dns DNS             server interface DNS servers
+  --mtu MTU             server interface MTU
+  --table TABLE         server routing table
+  --preup PREUP         command to run before interface is up
+  --postup POSTUP       command to run after interface is up
+  --predown PREDOWN     command to run before interface is down
+  --postdown POSTDOWN   command to run after interface is down
+  --saveconfig          save server interface to config upon shutdown
 ```
