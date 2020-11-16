@@ -99,7 +99,7 @@ def parse_arguments():
         default="table",
     )
     showpeers.add_argument(
-        "--simplify", help="do not print columns that are all None", action="store_true"
+        "-s", "--simplify", help="do not print columns that are all None", action="store_true"
     )
 
     # generate config
@@ -111,6 +111,7 @@ def parse_arguments():
         nargs="?",
     )
     genconfig.add_argument(
+        "-o",
         "--output",
         help="configuration file output directory",
         type=pathlib.Path,
