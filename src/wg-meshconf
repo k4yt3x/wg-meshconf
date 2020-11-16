@@ -19,7 +19,7 @@ import sys
 # local imports
 from database_manager import DatabaseManager
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 
 def parse_arguments():
@@ -47,6 +47,7 @@ def parse_arguments():
         "--address", help="address of the server", action="append", required=True
     )
     addpeer.add_argument("--endpoint", help="peer's public endpoint address")
+    addpeer.add_argument("--allowedips", help="additional allowed IP addresses", action="append")
     addpeer.add_argument("--privatekey", help="private key of server interface")
     addpeer.add_argument("--listenport", help="port to listen on", default=51820)
     addpeer.add_argument("--fwmark", help="fwmark for outgoing packets")
@@ -69,6 +70,7 @@ def parse_arguments():
     updatepeer.add_argument("name", help="Name used to identify this node")
     updatepeer.add_argument("--address", help="address of the server", action="append")
     updatepeer.add_argument("--endpoint", help="peer's public endpoint address")
+    updatepeer.add_argument("--allowedips", help="additional allowed IP addresses", action="append")
     updatepeer.add_argument("--privatekey", help="private key of server interface")
     updatepeer.add_argument("--listenport", help="port to listen on")
     updatepeer.add_argument("--fwmark", help="fwmark for outgoing packets")
@@ -139,6 +141,7 @@ if __name__ == "__main__":
             args.name,
             args.address,
             args.endpoint,
+            args.allowedips,
             args.listenport,
             args.fwmark,
             args.privatekey,
@@ -157,6 +160,7 @@ if __name__ == "__main__":
             args.name,
             args.address,
             args.endpoint,
+            args.allowedips,
             args.listenport,
             args.fwmark,
             args.privatekey,

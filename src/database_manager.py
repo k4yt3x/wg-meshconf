@@ -88,6 +88,7 @@ class DatabaseManager:
         name: str,
         Address: list,
         Endpoint: str = None,
+        AllowedIPs: list = None,
         ListenPort: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
@@ -125,6 +126,7 @@ class DatabaseManager:
         name: str,
         Address: list = None,
         Endpoint: str = None,
+        AllowedIPs: list = None,
         ListenPort: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
@@ -288,8 +290,11 @@ class DatabaseManager:
                         )
 
                     if database["peers"][p].get("Address") is not None:
-                        config.write(
-                            "AllowedIPs = {}\n".format(
-                                ", ".join(database["peers"][p]["Address"])
+                        if database["peers"][p].get("AllowedIPs") is not None:
+                            allowed_ips = ", ".join(
+                                database["peers"][p]["Address"]
+                                + database["peers"][p]["AllowedIPs"]
                             )
-                        )
+                        else:
+                            allowed_ips = ", ".join(database["peers"][p]["Address"])
+                        config.write("AllowedIPs = {}\n".format(allowed_ips))
