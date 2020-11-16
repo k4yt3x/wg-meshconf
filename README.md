@@ -1,8 +1,12 @@
-# WireGuard Mesh Configurator
+# wg-meshconf
 
 ## On the Horizon: `wg-dynamic`
 
 `wg-dynamic` is a tool designed officially by the WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic).
+
+## Version 2.0.0
+
+Say hello to version 2.0.0! This version is a complete rewrite of the pervious versions. Detailed information can be found in the [changelog](CHANGELOG.md). Please tell me if you like or hate this new design by posting an issue.
 
 ## Introduction
 
@@ -11,8 +15,11 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 ## Prerequisites
 
 - Python 3
+- prettytable (optional)
 
-You used to have to install a bunch of other Python packages, but I cut them all off in version 2.0.0 to keep this software lightweight.
+It is highly recommended to install `prettytable` so you can get beautiful tabular display of peer information. If you choose not to install `prettytable`, only plaintext output will be available.
+
+Python packages can be installed via `pip3 install --user -Ur requirements.txt`.
 
 ## Learn by an Example
 
@@ -75,6 +82,24 @@ If you would like to update a peer's information, use the `updatepeer` command. 
 In the example below, suppose you would like to update `tokyo1`'s endpoint address and change it to `tokyo321.com`. Use the `updatepeer` command and specify the new endpoint to be `tokyo321.com`. This will overwrite `tokyo1`'s existing `Endpoint` value.
 
 ![image](https://user-images.githubusercontent.com/21986859/99204025-3a3f0980-27ac-11eb-9159-0e40fc2eefeb.png)
+
+## Show Peer Information
+
+The `showpeers` command prints all peers' information by default.
+
+![image](https://user-images.githubusercontent.com/21986859/99205966-11ba0e00-27b2-11eb-994a-6d2552ff1ca4.png)
+
+Now that's a lot of info and a lot of unnecessary columns which only have `None`s. Therefore, I added the `-s`/`--simplify` command which omits those useless columns.
+
+![image](https://user-images.githubusercontent.com/21986859/99206017-38784480-27b2-11eb-9022-21ba791ce28c.png)
+
+You may also query information about a specific peer.
+
+![image](https://user-images.githubusercontent.com/21986859/99206049-547be600-27b2-11eb-89e9-d7c942dfac44.png)
+
+Plaintext mode has a similar usage. It's just a bit harder to read, at least for me.
+
+![image](https://user-images.githubusercontent.com/21986859/99206104-76756880-27b2-11eb-844b-e5197afcbf99.png)
 
 ## Deleting Peers
 
