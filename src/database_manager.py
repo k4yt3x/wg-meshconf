@@ -114,7 +114,7 @@ class DatabaseManager:
             privatekey = self.wireguard.genkey()
             database["peers"][name]["PrivateKey"] = privatekey
 
-        for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
+        for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
             if locals().get(key) is not None:
                 database["peers"][name][key] = locals().get(key)
 
@@ -144,7 +144,7 @@ class DatabaseManager:
             print(f"Peer with name {name} does not exist")
             return
 
-        for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
+        for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
             if locals().get(key) is not None:
                 database["peers"][name][key] = locals().get(key)
 
@@ -164,44 +164,68 @@ class DatabaseManager:
         # write changes into database
         self.write_database(database)
 
-    def showpeers(self, style: str = "table", simplify: bool = False):
+    def showpeers(self, name: str, style: str = "table", simplify: bool = False):
         database = self.read_database()
 
+        # if name is specified, show the specified peer
+        if name is not None:
+            if name not in database["peers"]:
+                print(f"Peer with ID {name} does not exist")
+                return
+            peers = [name]
+
+        # otherwise, show all peers
+        else:
+            peers = [p for p in database["peers"]]
+
+        field_names = ["name"]
+
+        # exclude all columns that only have None's in simplified mode
+        if simplify is True:
+            for peer in peers:
+                for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
+                    if (
+                        database["peers"][peer].get(key) is not None
+                        and key not in field_names
+                    ):
+                        field_names.append(key)
+
+        # include all columns by default
+        else:
+            field_names += INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES
+
+        # if the style is table
+        # print with prettytable
         if style == "table":
             table = PrettyTable()
-            field_names = ["name"]
-
-            if simplify is True:
-                for name in database["peers"]:
-                    for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
-                        if (
-                            database["peers"][name].get(key) is not None
-                            and key not in field_names
-                        ):
-                            field_names.append(key)
-            else:
-                field_names += (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES)
-
             table.field_names = field_names
 
-            for name in database["peers"]:
+            for peer in peers:
                 table.add_row(
-                    [name]
+                    [peer]
                     + [
-                        database["peers"][name].get(k)
-                        if not isinstance(database["peers"][name].get(k), list)
-                        else ",".join(database["peers"][name].get(k))
+                        database["peers"][peer].get(k)
+                        if not isinstance(database["peers"][peer].get(k), list)
+                        else ",".join(database["peers"][peer].get(k))
                         for k in [i for i in table.field_names if i != "name"]
                     ]
                 )
 
             print(table)
 
+        # if the style is text
+        # print in plaintext format
         elif style == "text":
-            for name in database["peers"]:
-                print(f"{'peer': <14}{name}")
-                for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
-                    print(f"{key: <14}{database['peers'][name].get(key)}")
+            for peer in peers:
+                print(f"{'peer': <14}{peer}")
+                for key in field_names:
+                    print(
+                        f"{key: <14}{database['peers'][peer].get(key)}"
+                    ) if not isinstance(
+                        database["peers"][peer].get(key), list
+                    ) else print(
+                        f"{key: <14}{','.join(database['peers'][peer].get(key))}"
+                    )
                 print()
 
     def genconfig(self, name: str, output: pathlib.Path):
@@ -216,7 +240,10 @@ class DatabaseManager:
         # check if output directory is valid
         # create output directory if it does not exist
         if output.exists() and not output.is_dir():
-            print("Error: output path already exists and is not a directory", file=sys.stderr)
+            print(
+                "Error: output path already exists and is not a directory",
+                file=sys.stderr,
+            )
             raise FileExistsError
         elif not output.exists():
             print(f"Creating output directory: {output}")
@@ -224,15 +251,23 @@ class DatabaseManager:
 
         # for every peer in the database
         for peer in peers:
-            with (output / f"{peer}.conf").open('w') as config:
+            with (output / f"{peer}.conf").open("w") as config:
                 config.write("[Interface]\n")
                 config.write("# Name: {}\n".format(peer))
-                config.write("Address = {}\n".format(", ".join(database["peers"][peer]["Address"])))
-                config.write("PrivateKey = {}\n".format(database["peers"][peer]["PrivateKey"]))
+                config.write(
+                    "Address = {}\n".format(
+                        ", ".join(database["peers"][peer]["Address"])
+                    )
+                )
+                config.write(
+                    "PrivateKey = {}\n".format(database["peers"][peer]["PrivateKey"])
+                )
 
                 for key in INTERFACE_OPTIONAL_ATTRIBUTES:
                     if database["peers"][peer].get(key) is not None:
-                        config.write("{} = {}\n".format(key, database["peers"][peer][key]))
+                        config.write(
+                            "{} = {}\n".format(key, database["peers"][peer][key])
+                        )
 
                 # generate [Peer] sections for all other peers
                 for p in [i for i in database["peers"] if i != peer]:
@@ -245,7 +280,12 @@ class DatabaseManager:
                     )
 
                     if database["peers"][p].get("Endpoint") is not None:
-                        config.write("Endpoint = {}:{}\n".format(database["peers"][p]["Endpoint"], database["peers"][p]["ListenPort"]))
+                        config.write(
+                            "Endpoint = {}:{}\n".format(
+                                database["peers"][p]["Endpoint"],
+                                database["peers"][p]["ListenPort"],
+                            )
+                        )
 
                     if database["peers"][p].get("Address") is not None:
                         config.write(

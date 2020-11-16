@@ -93,13 +93,19 @@ def parse_arguments():
     # showpeers prints a table of all peers and their configurations
     showpeers = subparsers.add_parser("showpeers")
     showpeers.add_argument(
+        "name", help="Name of the peer to query", nargs="?",
+    )
+    showpeers.add_argument(
         "--style",
         choices=["table", "text"],
         help="peers information printing style",
         default="table",
     )
     showpeers.add_argument(
-        "-s", "--simplify", help="do not print columns that are all None", action="store_true"
+        "-s",
+        "--simplify",
+        help="do not print columns that are all None",
+        action="store_true",
     )
 
     # generate config
@@ -168,7 +174,7 @@ if __name__ == "__main__":
         database_manager.delpeer(args.name)
 
     elif args.command == "showpeers":
-        database_manager.showpeers(args.style, args.simplify)
+        database_manager.showpeers(args.name, args.style, args.simplify)
 
     elif args.command == "genconfig":
         database_manager.genconfig(args.name, args.output)
