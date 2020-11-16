@@ -48,7 +48,7 @@ def parse_arguments():
     )
     addpeer.add_argument("--endpoint", help="peer's public endpoint address")
     addpeer.add_argument("--privatekey", help="private key of server interface")
-    addpeer.add_argument("--listenport", help="port to listen on")
+    addpeer.add_argument("--listenport", help="port to listen on", default=51820)
     addpeer.add_argument("--fwmark", help="fwmark for outgoing packets")
     addpeer.add_argument("--dns", help="server interface DNS servers")
     addpeer.add_argument("--mtu", help="server interface MTU")
@@ -132,9 +132,9 @@ if __name__ == "__main__":
             args.name,
             args.address,
             args.endpoint,
-            args.privatekey,
             args.listenport,
             args.fwmark,
+            args.privatekey,
             args.dns,
             args.mtu,
             args.table,
@@ -150,9 +150,9 @@ if __name__ == "__main__":
             args.name,
             args.address,
             args.endpoint,
-            args.privatekey,
             args.listenport,
             args.fwmark,
+            args.privatekey,
             args.dns,
             args.mtu,
             args.table,

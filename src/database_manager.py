@@ -21,10 +21,9 @@ from wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",
-    "Endpoint",
-    "PrivateKey",
     "ListenPort",
     "FwMark",
+    "PrivateKey",
     "DNS",
     "MTU",
     "Table",
@@ -36,7 +35,6 @@ INTERFACE_ATTRIBUTES = [
 ]
 
 INTERFACE_OPTIONAL_ATTRIBUTES = [
-    "Endpoint",
     "ListenPort",
     "FwMark",
     "DNS",
@@ -116,7 +114,7 @@ class DatabaseManager:
             privatekey = self.wireguard.genkey()
             database["peers"][name]["PrivateKey"] = privatekey
 
-        for key in INTERFACE_ATTRIBUTES:
+        for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
             if locals().get(key) is not None:
                 database["peers"][name][key] = locals().get(key)
 
@@ -146,7 +144,7 @@ class DatabaseManager:
             print(f"Peer with name {name} does not exist")
             return
 
-        for key in INTERFACE_ATTRIBUTES:
+        for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
             if locals().get(key) is not None:
                 database["peers"][name][key] = locals().get(key)
 
@@ -175,14 +173,14 @@ class DatabaseManager:
 
             if simplify is True:
                 for name in database["peers"]:
-                    for key in INTERFACE_ATTRIBUTES:
+                    for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
                         if (
                             database["peers"][name].get(key) is not None
                             and key not in field_names
                         ):
                             field_names.append(key)
             else:
-                field_names += INTERFACE_ATTRIBUTES
+                field_names += (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES)
 
             table.field_names = field_names
 
@@ -202,7 +200,7 @@ class DatabaseManager:
         elif style == "text":
             for name in database["peers"]:
                 print(f"{'peer': <14}{name}")
-                for key in INTERFACE_ATTRIBUTES:
+                for key in (INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES):
                     print(f"{key: <14}{database['peers'][name].get(key)}")
                 print()
 
@@ -247,7 +245,7 @@ class DatabaseManager:
                     )
 
                     if database["peers"][p].get("Endpoint") is not None:
-                        config.write("Endpoint = {}\n".format(database["peers"][p]["Endpoint"]))
+                        config.write("Endpoint = {}:{}\n".format(database["peers"][p]["Endpoint"], database["peers"][p]["ListenPort"]))
 
                     if database["peers"][p].get("Address") is not None:
                         config.write(
