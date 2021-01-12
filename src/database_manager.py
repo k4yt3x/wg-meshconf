@@ -12,6 +12,9 @@ import copy
 import json
 import pathlib
 import sys
+import hashlib
+import json
+import itertools
 
 # third party imports
 from prettytable import PrettyTable
@@ -251,6 +254,10 @@ class DatabaseManager:
             print(f"Creating output directory: {output}")
             output.mkdir(exist_ok=True)
 
+        preshared_keys = {}
+        for _combo_pair in itertools.combinations(peers, 2):
+            preshared_keys[json.dumps(sorted(list(_combo_pair)))] = self.wireguard.genpsk()
+
         # for every peer in the database
         for peer in peers:
             with (output / f"{peer}.conf").open("w") as config:
@@ -278,6 +285,12 @@ class DatabaseManager:
                     config.write(
                         "PublicKey = {}\n".format(
                             self.wireguard.pubkey(database["peers"][p]["PrivateKey"])
+                        )
+                    )
+
+                    config.write(
+                        "PresharedKey = {}\n".format(
+                            preshared_keys[json.dumps(sorted(list({peer, p})))]
                         )
                     )
 
