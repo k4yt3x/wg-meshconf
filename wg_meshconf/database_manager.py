@@ -17,7 +17,7 @@ import sys
 from prettytable import PrettyTable
 
 # local imports
-from wireguard import WireGuard
+from .wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",

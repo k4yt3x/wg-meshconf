@@ -17,9 +17,7 @@ import pathlib
 import sys
 
 # local imports
-from database_manager import DatabaseManager
-
-VERSION = "2.1.0"
+from .database_manager import DatabaseManager
 
 
 def parse_arguments():
@@ -130,7 +128,7 @@ def parse_arguments():
 
 
 # if the file is not being imported
-if __name__ == "__main__":
+def main():
 
     args = parse_arguments()
 
