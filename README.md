@@ -217,3 +217,18 @@ optional arguments:
   --postdown POSTDOWN   command to run after interface is down
   --saveconfig          save server interface to config upon shutdown
 ```
+
+## License
+
+Licensed under the GNU General Public License Version 3 (GNU GPL v3)
+https://www.gnu.org/licenses/gpl-3.0.txt
+
+![GPLv3 Icon](https://www.gnu.org/graphics/gplv3-127x51.png)
+
+(C) 2018-2021 K4YT3X
+
+## Credits
+
+This project relies on the following software and projects.
+
+- [WireGuard](https://www.wireguard.com/)
