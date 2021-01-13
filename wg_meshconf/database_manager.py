@@ -19,7 +19,10 @@ with contextlib.suppress(ImportError):
     from prettytable import PrettyTable
 
 # local imports
-from .wireguard import WireGuard
+try:
+    from wireguard import WireGuard
+except ImportError:
+    from .wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",

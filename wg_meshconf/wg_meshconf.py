@@ -17,7 +17,10 @@ import pathlib
 import sys
 
 # local imports
-from .database_manager import DatabaseManager
+try:
+    from database_manager import DatabaseManager
+except ImportError:
+    from .database_manager import DatabaseManager
 
 
 def parse_arguments():
@@ -192,3 +195,8 @@ def main():
             "No command specified\nUse wg-meshconf --help to see available commands",
             file=sys.stderr,
         )
+
+
+# launch the main function if it is not imported as a package
+if __name__ == "__main__":
+    main()
