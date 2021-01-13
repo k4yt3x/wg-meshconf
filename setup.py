@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wg-meshconf",
-    version="2.1.0",
+    version="2.1.1",
     author="K4YT3X",
     author_email="k4yt3x@k4yt3x.com",
     description="wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks",
