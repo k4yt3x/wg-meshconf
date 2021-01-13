@@ -4,17 +4,19 @@
 Name: Database Manager
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: November 15, 2020
+Last Modified: January 12, 2021
 """
 
 # built-in imports
+import contextlib
 import copy
 import json
 import pathlib
 import sys
 
 # third party imports
-from prettytable import PrettyTable
+with contextlib.suppress(ImportError):
+    from prettytable import PrettyTable
 
 # local imports
 from .wireguard import WireGuard
