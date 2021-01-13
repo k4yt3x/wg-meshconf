@@ -1,5 +1,6 @@
-src/database.json
-src/output/
+wg_meshconf/database.json
+wg_meshconf/output/
+wg-meshconf.odg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
