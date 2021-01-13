@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Name: wg-meshconf PyPI setup file
+Creator: dimon222
+Date Created: January 11, 2021
+Last Modified: January 11, 2021
+
+Dev: K4YT3X
+Last Modified: January 12, 2021
+"""
+
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -14,20 +26,14 @@ setuptools.setup(
     url="https://github.com/k4yt3x/wg-meshconf",
     packages=setuptools.find_packages(),
     license="GNU General Public License v3.0",
-    install_requires=[
-        'prettytable'
-    ],
+    install_requires=["prettytable"],
     classifiers=[
         "Topic :: Security :: Cryptography",
         "Environment :: Console",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent"
+        "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    entry_points={
-        'console_scripts': [
-            'wg-meshconf = wg_meshconf:main'
-        ]
-    }
+    python_requires=">=3.6",
+    entry_points={"console_scripts": ["wg-meshconf = wg_meshconf:main"]},
 )
