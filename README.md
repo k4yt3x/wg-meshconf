@@ -19,17 +19,26 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 
 It is highly recommended to install `prettytable` so you can get beautiful tabular display of peer information. If you choose not to install `prettytable`, only plaintext output will be available.
 
-## Installation
+## Installation (pip)
 
-You can clone this repository using `git`.
+wg-meshconf is available on PyPI. You can install it with pip and run the program via the `wg-meshconf` command.
 
 ```shell
-git clone https://github.com/k4yt3x/wg-meshconf.git
+# installing the program with pip
+pip3 install --user --U wg-meshconf
+
+# running the program
+wg-meshconf showpeers
 ```
 
-Alternatively, you can download the [master branch's ZIP file](https://github.com/k4yt3x/wg-meshconf/archive/master.zip) and decompress it. You may use any program to download and decompress the ZIP file. The example below uses `wget` and `unzip` to do the job on Linux.
+## Installation (Manual)
+
+Alternatively, if you do not want to install the program into the system with pip, you can clone this repository using `git` or download the [master branch's ZIP file](https://github.com/k4yt3x/wg-meshconf/archive/master.zip).
 
 ```shell
+# cloning the repository with git
+git clone https://github.com/k4yt3x/wg-meshconf.git
+
 # download the master branch's ZIP file
 wget https://github.com/k4yt3x/wg-meshconf/archive/master.zip
 
@@ -41,10 +50,10 @@ Then, you will need to install Python's dependencies.
 
 ```shell
 # if you cloned this repository
-pip3 install --user -Ur wg-meshconf/src/requirements.txt
+pip3 install --user -Ur wg-meshconf/wg_meshconf/requirements.txt
 
 # if you downloaded and decompressed the zip file
-pip3 install --user -Ur wg-meshconf-master/src/requirements.txt
+pip3 install --user -Ur wg-meshconf-master/wg_meshconf/requirements.txt
 ```
 
 ## Learn by an Example
@@ -169,7 +178,7 @@ Database files are essentially just JSON files. Below is an example.
 You may refer to the program's help page for usages. Use the `-h` switch or the `--help` switch to print the help page.
 
 ```shell
-$./wg-meshconf -h
+$ wg-meshconf -h
 usage: wg-meshconf [-h] [-d DATABASE] {addpeer,updatepeer,delpeer,showpeers,genconfig} ...
 
 positional arguments:
@@ -184,7 +193,7 @@ optional arguments:
 Specify `-h` or `--help` after a command to see this command's usages.
 
 ```shell
-$./wg-meshconf addpeer -h
+$ wg-meshconf addpeer -h
 usage: wg-meshconf addpeer [-h] --address ADDRESS [--endpoint ENDPOINT] [--privatekey PRIVATEKEY] [--listenport LISTENPORT] [--fwmark FWMARK] [--dns DNS] [--mtu MTU] [--table TABLE] [--preup PREUP] [--postup POSTUP] [--predown PREDOWN] [--postdown POSTDOWN] [--saveconfig] name
 
 positional arguments:
