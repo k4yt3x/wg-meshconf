@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Name: Database Manager
-Dev: K4YT3X
+Creator: K4YT3X
 Date Created: July 19, 2020
 Last Modified: November 15, 2020
 """
@@ -63,7 +63,7 @@ class DatabaseManager:
         self.wireguard = WireGuard()
 
     def read_database(self):
-        """ read database file into dict
+        """read database file into dict
 
         Returns:
             dict: content of database file in dict format
@@ -75,7 +75,7 @@ class DatabaseManager:
             return json.load(database_file)
 
     def write_database(self, data: dict):
-        """ dump data into database file
+        """dump data into database file
 
         Args:
             data (dict): content of database

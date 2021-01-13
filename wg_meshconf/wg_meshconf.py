@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Name: wg-meshconf
-Dev: K4YT3X
+Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: November 15, 2020
+Last Modified: January 12, 2021
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
-(C) 2018-2020 K4YT3X
+(C) 2018-2021 K4YT3X
 """
 
 # built-in imports
@@ -21,8 +21,7 @@ from .database_manager import DatabaseManager
 
 
 def parse_arguments():
-    """ parse CLI arguments
-    """
+    """parse CLI arguments"""
     parser = argparse.ArgumentParser(
         prog="wg-meshconf", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -45,7 +44,9 @@ def parse_arguments():
         "--address", help="address of the server", action="append", required=True
     )
     addpeer.add_argument("--endpoint", help="peer's public endpoint address")
-    addpeer.add_argument("--allowedips", help="additional allowed IP addresses", action="append")
+    addpeer.add_argument(
+        "--allowedips", help="additional allowed IP addresses", action="append"
+    )
     addpeer.add_argument("--privatekey", help="private key of server interface")
     addpeer.add_argument("--listenport", help="port to listen on", default=51820)
     addpeer.add_argument("--fwmark", help="fwmark for outgoing packets")
@@ -68,7 +69,9 @@ def parse_arguments():
     updatepeer.add_argument("name", help="Name used to identify this node")
     updatepeer.add_argument("--address", help="address of the server", action="append")
     updatepeer.add_argument("--endpoint", help="peer's public endpoint address")
-    updatepeer.add_argument("--allowedips", help="additional allowed IP addresses", action="append")
+    updatepeer.add_argument(
+        "--allowedips", help="additional allowed IP addresses", action="append"
+    )
     updatepeer.add_argument("--privatekey", help="private key of server interface")
     updatepeer.add_argument("--listenport", help="port to listen on")
     updatepeer.add_argument("--fwmark", help="fwmark for outgoing packets")
@@ -93,7 +96,9 @@ def parse_arguments():
     # showpeers prints a table of all peers and their configurations
     showpeers = subparsers.add_parser("showpeers")
     showpeers.add_argument(
-        "name", help="Name of the peer to query", nargs="?",
+        "name",
+        help="Name of the peer to query",
+        nargs="?",
     )
     showpeers.add_argument(
         "--style",

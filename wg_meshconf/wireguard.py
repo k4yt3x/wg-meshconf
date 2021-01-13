@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Name: WireGuard Python Bindings
-Dev: K4YT3X
+Creator: K4YT3X
 Date Created: October 11, 2019
 Last Modified: July 19, 2020
 """
@@ -13,7 +13,7 @@ import subprocess
 
 
 class WireGuard:
-    """ WireGuard utility controller
+    """WireGuard utility controller
 
     This class handles the interactions with the wg binary,
     including:
@@ -35,7 +35,7 @@ class WireGuard:
         self.wg_binary = wg_binary
 
     def genkey(self):
-        """ generate WG private key
+        """generate WG private key
 
         Generate a new wireguard private key via
         wg command.
@@ -51,7 +51,7 @@ class WireGuard:
         )
 
     def pubkey(self, privkey: str) -> str:
-        """  convert WG private key into public key
+        """convert WG private key into public key
 
         Uses wg pubkey command to convert the wg private
         key into a public key.
@@ -74,8 +74,7 @@ class WireGuard:
         )
 
     def genpsk(self):
-        """ generate a random base64 PSK
-        """
+        """generate a random base64 PSK"""
         return (
             subprocess.run(
                 [str(self.wg_binary.absolute()), "genpsk"],
