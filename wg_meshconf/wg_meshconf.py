@@ -189,6 +189,6 @@ def main():
     # if no commands are specified
     else:
         print(
-            f"No command specified\nUse {__file__} --help to see available commands",
+            "No command specified\nUse wg-meshconf --help to see available commands",
             file=sys.stderr,
         )
