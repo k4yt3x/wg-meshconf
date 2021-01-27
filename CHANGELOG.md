@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 (January 26, 2021)
+
+- No longer dependent on `wg` binary (all keypairs are generated in pure python)
+- Now available on PyPI
+
 ## 2.0.0 (November 15, 2020)
 
 Version 2.0.0 is a complete rewrite of this software. The whole software is completely re-designed from scratch. Previous versions had a lot of problems:
