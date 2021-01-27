@@ -1,86 +1,72 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Name: WireGuard Python Bindings
+Name: WireGuard Cryptography Class
 Creator: K4YT3X
 Date Created: October 11, 2019
-Last Modified: July 19, 2020
+Last Modified: January 26, 2021
+
+The WireGuard class implements some of wireguard-tools' cryptographic
+    functions such as generating WireGuard private and public keys.
 """
 
 # built-in imports
-import pathlib
-import subprocess
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+import base64
 
 
 class WireGuard:
-    """WireGuard utility controller
+    """WireGuard Cryptography Class
 
-    This class handles the interactions with the wg binary,
-    including:
-
-    - genkey
-    - pubkey
-    - genpsk
+    generates WireGuard public key, private key, and PSK
     """
 
-    def __init__(self, wg_binary=pathlib.Path("/usr/bin/wg")):
-        """
-        Keyword Arguments:
-            wg_binary {pathlib.Path} -- path of wg binary (default: {pathlib.Path("/usr/bin/wg")})
-
-        Since the script might have to be run as root, it is bad practice to find wg using
-        pathlib.Path(shutil.which("wg") since a malicious binary named wg can be under the current
-        directory to intercept root privilege if SUID permission is given to the script.
-        """
-        self.wg_binary = wg_binary
-
-    def genkey(self):
-        """generate WG private key
-
-        Generate a new wireguard private key via
-        wg command.
-        """
-        return (
-            subprocess.run(
-                [str(self.wg_binary.absolute()), "genkey"],
-                check=True,
-                stdout=subprocess.PIPE,
-            )
-            .stdout.decode()
-            .strip()
-        )
-
-    def pubkey(self, privkey: str) -> str:
-        """convert WG private key into public key
-
-        Uses wg pubkey command to convert the wg private
-        key into a public key.
-
-        Arguments:
-            privkey {str} -- wg privkey
+    @staticmethod
+    def genkey() -> str:
+        """generate WireGuard private key
 
         Returns:
-            str -- pubkey derived from privkey
+            str: X25519 private key encoded in base64 format
         """
-        return (
-            subprocess.run(
-                [str(self.wg_binary.absolute()), "pubkey"],
-                check=True,
-                stdout=subprocess.PIPE,
-                input=privkey.encode("utf-8"),
+        return base64.b64encode(
+            X25519PrivateKey.generate().private_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PrivateFormat.Raw,
+                encryption_algorithm=serialization.NoEncryption(),
             )
-            .stdout.decode()
-            .strip()
-        )
+        ).decode()
 
-    def genpsk(self):
-        """generate a random base64 PSK"""
-        return (
-            subprocess.run(
-                [str(self.wg_binary.absolute()), "genpsk"],
-                check=True,
-                stdout=subprocess.PIPE,
+    @staticmethod
+    def pubkey(privkey: str) -> str:
+        """convert WireGuard private key into public key
+
+        Args:
+            privkey (str): WireGuard X25519 private key
+                encoded in base64 format
+
+        Returns:
+            str: corresponding public key of the provided
+                private key encoded as a base64 string
+        """
+        return base64.b64encode(
+            X25519PrivateKey.from_private_bytes(base64.b64decode(privkey.encode()))
+            .public_key()
+            .public_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PublicFormat.Raw,
             )
-            .stdout.decode()
-            .strip()
-        )
+        ).decode()
+
+    @staticmethod
+    def genpsk() -> str:
+        """generate a WireGuard PSK
+
+        This is an alias of WireGuard.genkey since they both
+            produce a random sequence of bytes. This generated
+            X25519 private key can also be used as a symmetric key.
+
+        Returns:
+            str: generated PSK encoded as a base64 string
+        """
+        return WireGuard.genkey()
