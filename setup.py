@@ -7,7 +7,7 @@ Date Created: January 11, 2021
 Last Modified: January 11, 2021
 
 Dev: K4YT3X
-Last Modified: January 12, 2021
+Last Modified: January 26, 2021
 """
 
 import setuptools
@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wg-meshconf",
-    version="2.1.2",
+    version="2.2.0",
     author="K4YT3X",
     author_email="k4yt3x@k4yt3x.com",
     description="wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks",
@@ -26,16 +26,12 @@ setuptools.setup(
     url="https://github.com/k4yt3x/wg-meshconf",
     packages=setuptools.find_packages(),
     license="GNU General Public License v3.0",
-    install_requires=["prettytable"],
+    install_requires=["cryptography", "prettytable"],
     classifiers=[
         "Topic :: Security :: Cryptography",
         "Environment :: Console",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
