@@ -69,16 +69,16 @@ For this example, suppose you have four servers as shown below. These servers ca
 First we need to add all peers in the mesh network into the database. The basic syntax for adding new peers is:
 
 ```shell
-./wg-meshconf addpeer NAME --address IP_ADDRESS --address IP_ADDRESS_2 --endpoint ENDPOINT
+wg-meshconf addpeer NAME --address IP_ADDRESS --address IP_ADDRESS_2 --endpoint ENDPOINT
 ```
 
 - New private key will be generated automatically if unspecified
 - ListenPort defaults to 51820 per WireGuard standard
 - All other values are left empty by default
 
-There are more options which you can specify. Use the command `./wg-meshconf addpeer -h` for more details.
+There are more options which you can specify. Use the command `wg-meshconf addpeer -h` for more details.
 
-After adding all the peers into the database, you can verify that they have all been added correctly via the `./wg-meshconf showpeers` command. The `simplify` switch here omits all columns with only `None`s.
+After adding all the peers into the database, you can verify that they have all been added correctly via the `wg-meshconf showpeers` command. The `simplify` switch here omits all columns with only `None`s.
 
 ![image](https://user-images.githubusercontent.com/21986859/99202459-1dec9e00-27a7-11eb-8190-a5a3c6644d2a.png)
 
@@ -221,6 +221,7 @@ optional arguments:
 ## License
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3)
+
 https://www.gnu.org/licenses/gpl-3.0.txt
 
 ![GPLv3 Icon](https://www.gnu.org/graphics/gplv3-127x51.png)
