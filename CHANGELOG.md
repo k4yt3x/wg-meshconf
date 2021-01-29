@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0 (January 26, 2021)
+
+- Implemented private/public key generation using native Python code
+  - Consequentially, this program no longer depends on an external `wg` binary
+
+## 2.1.0 (January 13, 2021)
+
+- Reorganized code and made available on PyPI
+
 ## 2.0.0 (November 15, 2020)
 
 Version 2.0.0 is a complete rewrite of this software. The whole software is completely re-designed from scratch. Previous versions had a lot of problems:
