@@ -194,7 +194,7 @@ Specify `-h` or `--help` after a command to see this command's usages.
 
 ```shell
 $ wg-meshconf addpeer -h
-usage: wg-meshconf addpeer [-h] --address ADDRESS [--endpoint ENDPOINT] [--privatekey PRIVATEKEY] [--listenport LISTENPORT] [--fwmark FWMARK] [--dns DNS] [--mtu MTU] [--table TABLE] [--preup PREUP] [--postup POSTUP] [--predown PREDOWN] [--postdown POSTDOWN] [--saveconfig] name
+usage: wg-meshconf addpeer [-h] --address ADDRESS [--endpoint ENDPOINT] [--allowedips ALLOWEDIPS] [--privatekey PRIVATEKEY] [--listenport LISTENPORT] [--fwmark FWMARK] [--dns DNS] [--mtu MTU] [--table TABLE] [--preup PREUP] [--postup POSTUP] [--predown PREDOWN] [--postdown POSTDOWN] [--keepalive KEEPALIVE] [--saveconfig] name
 
 positional arguments:
   name                  Name used to identify this node
@@ -203,6 +203,8 @@ optional arguments:
   -h, --help            show this help message and exit
   --address ADDRESS     address of the server
   --endpoint ENDPOINT   peer's public endpoint address
+  --allowedips ALLOWEDIPS
+                        additional allowed IP addresses
   --privatekey PRIVATEKEY
                         private key of server interface
   --listenport LISTENPORT
@@ -215,6 +217,8 @@ optional arguments:
   --postup POSTUP       command to run after interface is up
   --predown PREDOWN     command to run before interface is down
   --postdown POSTDOWN   command to run after interface is down
+  --keepalive KEEPALIVE
+                        send keepalive packets every n seconds
   --saveconfig          save server interface to config upon shutdown
 ```
 
