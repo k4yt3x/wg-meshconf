@@ -25,7 +25,7 @@ wg-meshconf is available on PyPI. You can install it with pip and run the progra
 
 ```shell
 # installing the program with pip
-pip3 install --user --U wg-meshconf
+pip3 install --user -U wg-meshconf
 
 # running the program
 wg-meshconf showpeers
