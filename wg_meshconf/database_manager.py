@@ -104,6 +104,7 @@ class DatabaseManager:
         PostUp: str = None,
         PreDown: str = None,
         PostDown: str = None,
+        PersistentKeepalive: int = None,
         SaveConfig: bool = None,
     ):
         database = copy.deepcopy(self.database_template)
@@ -142,6 +143,7 @@ class DatabaseManager:
         PostUp: str = None,
         PreDown: str = None,
         PostDown: str = None,
+        PersistentKeepalive: int = None,
         SaveConfig: bool = None,
     ):
         database = copy.deepcopy(self.database_template)
@@ -303,3 +305,10 @@ class DatabaseManager:
                         else:
                             allowed_ips = ", ".join(database["peers"][p]["Address"])
                         config.write("AllowedIPs = {}\n".format(allowed_ips))
+
+                    if database["peers"][p].get("PersistentKeepalive") is not None:
+                        config.write(
+                            "PersistentKeepalive = {}\n".format(
+                                database["peers"][p]["PersistentKeepalive"],
+                            )
+                        )

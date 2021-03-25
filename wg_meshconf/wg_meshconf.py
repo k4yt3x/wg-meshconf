@@ -60,6 +60,7 @@ def parse_arguments():
     addpeer.add_argument("--postup", help="command to run after interface is up")
     addpeer.add_argument("--predown", help="command to run before interface is down")
     addpeer.add_argument("--postdown", help="command to run after interface is down")
+    addpeer.add_argument("--keepalive", help="send keepalive packets every n seconds")
     addpeer.add_argument(
         "--saveconfig",
         action="store_true",
@@ -85,6 +86,7 @@ def parse_arguments():
     updatepeer.add_argument("--postup", help="command to run after interface is up")
     updatepeer.add_argument("--predown", help="command to run before interface is down")
     updatepeer.add_argument("--postdown", help="command to run after interface is down")
+    updatepeer.add_argument("--keepalive", help="send keepalive packets every n seconds")
     updatepeer.add_argument(
         "--saveconfig",
         action="store_true",
@@ -158,6 +160,7 @@ def main():
             args.postup,
             args.predown,
             args.postdown,
+            args.keepalive,
             args.saveconfig,
         )
 
@@ -177,6 +180,7 @@ def main():
             args.postup,
             args.predown,
             args.postdown,
+            args.keepalive,
             args.saveconfig,
         )
 
