@@ -52,7 +52,9 @@ def parse_arguments():
     )
     addpeer.add_argument("--privatekey", help="private key of server interface")
     addpeer.add_argument("--listenport", help="port to listen on", default=51820)
-    addpeer.add_argument("--persistentkeepalive", help="set persistent keepalive interval")
+    addpeer.add_argument(
+        "--persistentkeepalive", help="set persistent keepalive interval"
+    )
     addpeer.add_argument("--fwmark", help="fwmark for outgoing packets")
     addpeer.add_argument("--dns", help="server interface DNS servers")
     addpeer.add_argument("--mtu", help="server interface MTU")
@@ -78,7 +80,9 @@ def parse_arguments():
     )
     updatepeer.add_argument("--privatekey", help="private key of server interface")
     updatepeer.add_argument("--listenport", help="port to listen on")
-    updatepeer.add_argument("--persistentkeepalive", help="set persistent keepalive interval")
+    updatepeer.add_argument(
+        "--persistentkeepalive", help="set persistent keepalive interval"
+    )
     updatepeer.add_argument("--fwmark", help="fwmark for outgoing packets")
     updatepeer.add_argument("--dns", help="server interface DNS servers")
     updatepeer.add_argument("--mtu", help="server interface MTU")

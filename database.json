@@ -1,0 +1,37 @@
+{
+    "peers": {
+        "tokyo1": {
+            "PrivateKey": "qIM4Y95hEjZwKRnXs182gHUzJaNXvS5ypNztnvvau10=",
+            "Address": [
+                "10.1.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "tokyo1.com",
+            "PersistentKeepalive": "25"
+        },
+        "germany1": {
+            "PrivateKey": "8K2qSU4cN6nN+1SR3K17T8hDLIQSKSgQvfwE3cormFQ=",
+            "Address": [
+                "10.2.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "germany1.com"
+        },
+        "canada11": {
+            "PrivateKey": "2H2ASu9ZM5jG3pPdG4lW3e67PTc6VfRl4t5a8ddQ4Ug=",
+            "Address": [
+                "10.3.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "canada1.com"
+        },
+        "shanghai1": {
+            "PrivateKey": "oCsLP1KTIUWPKWnHluvyQW1YkpWgaO0Gz3iTDItUKV8=",
+            "Address": [
+                "10.3.0.1/16"
+            ],
+            "ListenPort": 51820,
+            "Endpoint": "shanghai1.com"
+        }
+    }
+}

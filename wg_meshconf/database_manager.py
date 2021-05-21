@@ -4,7 +4,7 @@
 Name: Database Manager
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: January 12, 2021
+Last Modified: May 21, 2021
 """
 
 # built-in imports
