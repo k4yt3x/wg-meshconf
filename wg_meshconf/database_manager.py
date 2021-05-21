@@ -60,6 +60,10 @@ PEER_ATTRIBUTES = [
     "PersistentKeepalive",
 ]
 
+PEER_OPTIONAL_ATTRIBUTES = [
+    "PersistentKeepalive",
+]
+
 
 class DatabaseManager:
     def __init__(self, database_path: pathlib.Path):
@@ -95,6 +99,7 @@ class DatabaseManager:
         Endpoint: str = None,
         AllowedIPs: list = None,
         ListenPort: int = None,
+        PersistentKeepalive: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
         DNS: str = None,
@@ -133,6 +138,7 @@ class DatabaseManager:
         Endpoint: str = None,
         AllowedIPs: list = None,
         ListenPort: int = None,
+        PersistentKeepalive: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
         DNS: str = None,
@@ -303,3 +309,9 @@ class DatabaseManager:
                         else:
                             allowed_ips = ", ".join(database["peers"][p]["Address"])
                         config.write("AllowedIPs = {}\n".format(allowed_ips))
+
+                    for key in PEER_OPTIONAL_ATTRIBUTES:
+                        if database["peers"][p].get(key) is not None:
+                            config.write(
+                                "{} = {}\n".format(key, database["peers"][p][key])
+                            )

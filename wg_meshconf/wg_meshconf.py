@@ -4,7 +4,7 @@
 Name: wg-meshconf
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: January 12, 2021
+Last Modified: May 21, 2021
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -52,6 +52,7 @@ def parse_arguments():
     )
     addpeer.add_argument("--privatekey", help="private key of server interface")
     addpeer.add_argument("--listenport", help="port to listen on", default=51820)
+    addpeer.add_argument("--persistentkeepalive", help="set persistent keepalive interval")
     addpeer.add_argument("--fwmark", help="fwmark for outgoing packets")
     addpeer.add_argument("--dns", help="server interface DNS servers")
     addpeer.add_argument("--mtu", help="server interface MTU")
@@ -77,6 +78,7 @@ def parse_arguments():
     )
     updatepeer.add_argument("--privatekey", help="private key of server interface")
     updatepeer.add_argument("--listenport", help="port to listen on")
+    updatepeer.add_argument("--persistentkeepalive", help="set persistent keepalive interval")
     updatepeer.add_argument("--fwmark", help="fwmark for outgoing packets")
     updatepeer.add_argument("--dns", help="server interface DNS servers")
     updatepeer.add_argument("--mtu", help="server interface MTU")
@@ -129,7 +131,7 @@ def parse_arguments():
         "--output",
         help="configuration file output directory",
         type=pathlib.Path,
-        default=pathlib.Path(__file__).parent.absolute() / "output",
+        default=pathlib.Path.cwd() / "output",
     )
 
     return parser.parse_args()
@@ -149,6 +151,7 @@ def main():
             args.endpoint,
             args.allowedips,
             args.listenport,
+            args.persistentkeepalive,
             args.fwmark,
             args.privatekey,
             args.dns,
@@ -168,6 +171,7 @@ def main():
             args.endpoint,
             args.allowedips,
             args.listenport,
+            args.persistentkeepalive,
             args.fwmark,
             args.privatekey,
             args.dns,
@@ -195,8 +199,3 @@ def main():
             "No command specified\nUse wg-meshconf --help to see available commands",
             file=sys.stderr,
         )
-
-
-# launch the main function if it is not imported as a package
-if __name__ == "__main__":
-    main()
