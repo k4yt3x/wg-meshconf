@@ -9,7 +9,7 @@ Last Modified: January 11, 2021
 Dev: K4YT3X
 Last Modified: May 22, 2021
 
-pip3 install --user --U setuptools wheel twine
+pip3 install --user -U setuptools wheel twine
 python3 setup.py sdist bdist_wheel
 python3 -m twine upload --repository pypi dist/*
 """
