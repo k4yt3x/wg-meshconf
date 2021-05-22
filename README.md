@@ -4,9 +4,9 @@
 
 `wg-dynamic` is a tool designed officially by the WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic).
 
-## Version 2.0.0
+## Version 2
 
-Say hello to version 2.0.0! This version is a complete rewrite of the pervious versions. Detailed information can be found in the [changelog](CHANGELOG.md). Please tell me if you like or hate this new design by posting an issue.
+Say hello to version 2! This version is a complete rewrite of the pervious versions. Detailed information can be found in the [changelog](CHANGELOG.md). Please tell me if you like or hate this new design by posting an issue.
 
 ## Introduction
 
