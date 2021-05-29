@@ -1,10 +1,10 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Name: wg-meshconf
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: May 21, 2021
+Last Modified: May 29, 2021
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -17,10 +17,7 @@ import pathlib
 import sys
 
 # local imports
-try:
-    from database_manager import DatabaseManager
-except ImportError:
-    from .database_manager import DatabaseManager
+from .database_manager import DatabaseManager
 
 
 def parse_arguments():
@@ -34,7 +31,7 @@ def parse_arguments():
         "--database",
         type=pathlib.Path,
         help="path where the database file is stored",
-        default=pathlib.Path("database.json"),
+        default=pathlib.Path("database.csv"),
     )
 
     # add subparsers for commands

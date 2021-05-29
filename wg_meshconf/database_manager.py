@@ -4,13 +4,13 @@
 Name: Database Manager
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: May 21, 2021
+Last Modified: May 29, 2021
 """
 
 # built-in imports
 import contextlib
 import copy
-import json
+import csv
 import pathlib
 import sys
 
@@ -19,10 +19,7 @@ with contextlib.suppress(ImportError):
     from prettytable import PrettyTable
 
 # local imports
-try:
-    from wireguard import WireGuard
-except ImportError:
-    from .wireguard import WireGuard
+from .wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",
@@ -64,6 +61,25 @@ PEER_OPTIONAL_ATTRIBUTES = [
     "PersistentKeepalive",
 ]
 
+KEY_TYPE = {
+    "name": str,
+    "Address": list,
+    "Endpoint": str,
+    "AllowedIPs": list,
+    "ListenPort": int,
+    "PersistentKeepalive": int,
+    "FwMark": str,
+    "PrivateKey": str,
+    "DNS": str,
+    "MTU": int,
+    "Table": str,
+    "PreUp": str,
+    "PostUp": str,
+    "PreDown": str,
+    "PostDown": str,
+    "SaveConfig": bool,
+}
+
 
 class DatabaseManager:
     def __init__(self, database_path: pathlib.Path):
@@ -80,8 +96,23 @@ class DatabaseManager:
         if not self.database_path.is_file():
             return self.database_template
 
+        database = copy.deepcopy(self.database_template)
+
         with self.database_path.open(mode="r", encoding="utf-8") as database_file:
-            return json.load(database_file)
+            peers = csv.DictReader(database_file)
+            for peer in peers:
+                for key in peer:
+                    if peer[key] == "":
+                        peer[key] = None
+                    elif KEY_TYPE[key] == list:
+                        peer[key] = peer[key].split(",")
+                    elif KEY_TYPE[key] == int:
+                        peer[key] = int(peer[key])
+                    elif KEY_TYPE[key] == bool:
+                        peer[key] = peer[key].lower() == "true"
+                database["peers"][peer.pop("name")] = peer
+
+        return database
 
     def write_database(self, data: dict):
         """dump data into database file
@@ -89,8 +120,23 @@ class DatabaseManager:
         Args:
             data (dict): content of database
         """
+
         with self.database_path.open(mode="w", encoding="utf-8") as database_file:
-            json.dump(data, database_file, indent=4)
+            writer = csv.DictWriter(
+                database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
+            )
+            writer.writeheader()
+            data = copy.deepcopy(data)
+            for peer in data["peers"]:
+                data["peers"][peer]["name"] = peer
+                for key in data["peers"][peer]:
+                    if isinstance(data["peers"][peer][key], list):
+                        data["peers"][peer][key] = ",".join(data["peers"][peer][key])
+                    elif isinstance(data["peers"][peer][key], int):
+                        data["peers"][peer][key] = str(data["peers"][peer][key])
+                    elif isinstance(data["peers"][peer][key], bool):
+                        data["peers"][peer][key] = str(data["peers"][peer][key])
+                writer.writerow(data["peers"][peer])
 
     def addpeer(
         self,
@@ -111,8 +157,7 @@ class DatabaseManager:
         PostDown: str = None,
         SaveConfig: bool = None,
     ):
-        database = copy.deepcopy(self.database_template)
-        database.update(self.read_database())
+        database = self.read_database()
 
         if name in database["peers"]:
             print(f"Peer with name {name} already exists")
@@ -150,8 +195,7 @@ class DatabaseManager:
         PostDown: str = None,
         SaveConfig: bool = None,
     ):
-        database = copy.deepcopy(self.database_template)
-        database.update(self.read_database())
+        database = self.read_database()
 
         if name not in database["peers"]:
             print(f"Peer with name {name} does not exist")
@@ -164,8 +208,7 @@ class DatabaseManager:
         self.write_database(database)
 
     def delpeer(self, name: str):
-        database = copy.deepcopy(self.database_template)
-        database.update(self.read_database())
+        database = self.read_database()
 
         # abort if user doesn't exist
         if name not in database["peers"]:
@@ -210,21 +253,26 @@ class DatabaseManager:
         # if the style is table
         # print with prettytable
         if style == "table":
-            table = PrettyTable()
-            table.field_names = field_names
+            try:
+                table = PrettyTable()
+                table.field_names = field_names
 
-            for peer in peers:
-                table.add_row(
-                    [peer]
-                    + [
-                        database["peers"][peer].get(k)
-                        if not isinstance(database["peers"][peer].get(k), list)
-                        else ",".join(database["peers"][peer].get(k))
-                        for k in [i for i in table.field_names if i != "name"]
-                    ]
-                )
+                for peer in peers:
+                    table.add_row(
+                        [peer]
+                        + [
+                            database["peers"][peer].get(k)
+                            if not isinstance(database["peers"][peer].get(k), list)
+                            else ",".join(database["peers"][peer].get(k))
+                            for k in [i for i in table.field_names if i != "name"]
+                        ]
+                    )
 
-            print(table)
+                print(table)
+            except NameError:
+                print("PrettyTable is not installed", sys.stderr)
+                print("Displaying in table mode is not available", sys.stderr)
+                sys.exit(1)
 
         # if the style is text
         # print in plaintext format
@@ -259,7 +307,7 @@ class DatabaseManager:
             )
             raise FileExistsError
         elif not output.exists():
-            print(f"Creating output directory: {output}")
+            print(f"Creating output directory: {output}", sys.stderr)
             output.mkdir(exist_ok=True)
 
         # for every peer in the database
