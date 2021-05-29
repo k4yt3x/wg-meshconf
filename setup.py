@@ -7,7 +7,7 @@ Date Created: January 11, 2021
 Last Modified: January 11, 2021
 
 Dev: K4YT3X
-Last Modified: May 22, 2021
+Last Modified: May 29, 2021
 
 pip3 install --user -U setuptools wheel twine
 python3 setup.py sdist bdist_wheel
@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wg-meshconf",
-    version="2.3.0",
+    version="2.4.0",
     author="K4YT3X",
     author_email="k4yt3x@k4yt3x.com",
     description="wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks",
