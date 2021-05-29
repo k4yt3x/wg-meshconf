@@ -72,6 +72,8 @@ You will first need to add the peers' information into the database. There are t
 
 wg-meshconf has changed its database format from JSON to CSV and added the `init` command since version 2.4.0. This means that it is now possible for users to directly edit the database file with Excel or other CSV-compatible editors to create/read/update/delete peer information.
 
+> (P.S. I thought about making a fancy GUI for wg-meshconf like the other tools, but then I thought, why do it the complex way when you can simply "borrow" Excel's GUI?)
+
 Run the following command to initialize a new database file. By default, the database file is named `database.csv`. You can also specify the file's name via `-d`.
 
 ```shell
