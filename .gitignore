@@ -1,4 +1,4 @@
-wg_meshconf/database.json
+*.csv
 wg_meshconf/output/
 wg-meshconf.odg
 
