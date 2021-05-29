@@ -37,6 +37,9 @@ def parse_arguments():
     # add subparsers for commands
     subparsers = parser.add_subparsers(dest="command")
 
+    # initialize empty database
+    subparsers.add_parser("init")
+
     # add new peer
     addpeer = subparsers.add_parser("addpeer")
     addpeer.add_argument("name", help="Name used to identify this node")
@@ -145,7 +148,10 @@ def main():
 
     database_manager = DatabaseManager(args.database)
 
-    if args.command == "addpeer":
+    if args.command == "init":
+        database_manager.init()
+
+    elif args.command == "addpeer":
         database_manager.addpeer(
             args.name,
             args.address,
