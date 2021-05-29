@@ -64,7 +64,42 @@ For this example, suppose you have four servers as shown below. These servers ca
 
 ![image](https://user-images.githubusercontent.com/21986859/99200153-94839e80-279b-11eb-81c9-189b609661ee.png)
 
-### Step 1: Add Peers
+### Step 1: Add Basic Peer Information
+
+You will first need to add the peers' information into the database. There are two ways to do it: via Excel and via the command line interface.
+
+#### Method A: With Excel
+
+wg-meshconf has changed its database format from JSON to CSV and added the `init` command since version 2.4.0. This means that it is now possible for users to directly edit the database file with Excel or other CSV-compatible editors to create/read/update/delete peer information.
+
+Run the following command to initialize a new database file. By default, the database file is named `database.csv`. You can also specify the file's name via `-d`.
+
+```shell
+wg-meshconf init
+```
+
+Open the database CSV file with an editor like Excel or LibreOffice Calc. You should see the following column headers.
+
+![image](https://user-images.githubusercontent.com/21986859/120080963-93b4b900-c0aa-11eb-9e40-0da767c1cbfc.png)
+
+You can then fill in the peers' information. **You will need to fill in at least the peers' `Name`, `Address`, and `Endpoint` values.** These values cannot be automatically generated.
+
+![image](https://user-images.githubusercontent.com/21986859/120081082-2fdec000-c0ab-11eb-90ad-0993a0557e1e.png)
+
+
+Once you're done, save the file and execute the `init` command again to automatically generate the rest of the needed information such as peer private keys.
+
+```shell
+wg-meshconf init
+```
+
+If you check the file again, you'll see the necessary fields getting automatically filed in.
+
+![image](https://user-images.githubusercontent.com/21986859/120081172-a2e83680-c0ab-11eb-963d-b6810a6580a3.png)
+
+#### Method B: With Terminal
+
+If, for some reason, you don't want to edit the database file directly, you can also use this tool purely through its command line interface.
 
 First we need to add all peers in the mesh network into the database. The basic syntax for adding new peers is:
 
@@ -146,31 +181,16 @@ This example below shows how to delete the peer `tokyo1` from the database.
 
 ## Database Files
 
-Unlike 1.x.x versions of wg-meshconf, version 2.0.0 does not require the user to save or load profiles. Instead, all add peer, update peer and delete peer operations are file operations. The changes will be saved to the database file immediately. The database file to use can be specified via the `-d` or the `--database` option. If no database file is specified, `database.json` will be used.
+Unlike 1.x.x versions of wg-meshconf, version 2.0.0 does not require the user to save or load profiles. Instead, all add peer, update peer and delete peer operations are file operations. The changes will be saved to the database file immediately. The database file to use can be specified via the `-d` or the `--database` option. If no database file is specified, `database.csv` will be used.
 
-Database files are essentially just JSON files. Below is an example.
+Database files are essentially just CSV files (it was JSON before version 2.4.0). Below is an example.
 
-```json
-{
-    "peers": {
-        "tokyo1": {
-            "PrivateKey": "8NgwtCjISH6tznAzj5e3ujr3llxgdrLzCje9U6mUD1c=",
-            "Address": [
-                "10.1.0.1/16"
-            ],
-            "ListenPort": 51820,
-            "Endpoint": "tokyo1.com"
-        },
-        "germany1": {
-            "PrivateKey": "GFtKAG0zhWfa3LxPOG/d9zN6OfZKjL1CTyZih4oUjlU=",
-            "Address": [
-                "10.2.0.1/16"
-            ],
-            "ListenPort": 51820,
-            "Endpoint": "germany1.com"
-        }
-    }
-}
+```csv
+"Name","Address","Endpoint","AllowedIPs","ListenPort","PersistentKeepalive","FwMark","PrivateKey","DNS","MTU","Table","PreUp","PostUp","PreDown","PostDown","SaveConfig"
+"tokyo1","10.1.0.1/16","tokyo1.com","","51820","","","yJndNh80ToNWGOfDlbtho1wHAEZGa7ZhNpsHf7AJVUM=","","","","","","","",""
+"germany1","10.2.0.1/16","germany1.com","","51820","","","SEOaOjTrhR4do1iUrTTRRHZs6xCA3Q/H0yHW3ZpkHko=","","","","","","","",""
+"canada1","10.3.0.1/16","canada1.com","","51820","","","2D34jpbTsU+KeBqfItTEbL5m7nYcBomWWJGTYCT6eko=","","","","","","","",""
+"shanghai1","10.4.0.1/16","shanghai1.com","","51820","","","CGyR7goj/uGH3TQHgVknpb9ZBR+/yMfkve+kVNGBYlg=","","","","","","","",""
 ```
 
 ## Detailed Usages
