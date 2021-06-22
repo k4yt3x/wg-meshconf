@@ -4,20 +4,20 @@
 Name: wg-meshconf
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: May 29, 2021
+Last Modified: June 16, 2021
 
 Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018-2021 K4YT3X
 """
 
+# local imports
+from .database_manager import DatabaseManager
+
 # built-in imports
 import argparse
 import pathlib
 import sys
-
-# local imports
-from .database_manager import DatabaseManager
 
 
 def parse_arguments():
@@ -110,15 +110,9 @@ def parse_arguments():
         nargs="?",
     )
     showpeers.add_argument(
-        "--style",
-        choices=["table", "text"],
-        help="peers information printing style",
-        default="table",
-    )
-    showpeers.add_argument(
-        "-s",
-        "--simplify",
-        help="do not print columns that are all None",
+        "-v",
+        "--verbose",
+        help="display all columns despite they hold empty values",
         action="store_true",
     )
 
@@ -195,7 +189,7 @@ def main():
         database_manager.delpeer(args.name)
 
     elif args.command == "showpeers":
-        database_manager.showpeers(args.name, args.style, args.simplify)
+        database_manager.showpeers(args.name, args.verbose)
 
     elif args.command == "genconfig":
         database_manager.genconfig(args.name, args.output)

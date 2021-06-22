@@ -4,22 +4,22 @@
 Name: Database Manager
 Creator: K4YT3X
 Date Created: July 19, 2020
-Last Modified: May 29, 2021
+Last Modified: June 16, 2021
 """
 
+# local imports
+from .wireguard import WireGuard
+
 # built-in imports
-import contextlib
 import copy
 import csv
 import pathlib
 import sys
 
 # third party imports
-with contextlib.suppress(ImportError):
-    from prettytable import PrettyTable
+from rich.console import Console
+from rich.table import Table
 
-# local imports
-from .wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",
@@ -90,7 +90,7 @@ class DatabaseManager:
     def init(self):
         """initialize an empty database file"""
         if not self.database_path.exists():
-            with self.database_path.open(mode="w", encoding="utf-8") as database_file:
+            with self.database_path.open(mode="w", encoding="utf-8", newline="") as database_file:
                 writer = csv.DictWriter(
                     database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
                 )
@@ -150,7 +150,7 @@ class DatabaseManager:
             data (dict): content of database
         """
 
-        with self.database_path.open(mode="w", encoding="utf-8") as database_file:
+        with self.database_path.open(mode="w", encoding="utf-8", newline="") as database_file:
             writer = csv.DictWriter(
                 database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
             )
@@ -249,7 +249,7 @@ class DatabaseManager:
         # write changes into database
         self.write_database(database)
 
-    def showpeers(self, Name: str, style: str = "table", simplify: bool = False):
+    def showpeers(self, Name: str, verbose: bool = False):
         database = self.read_database()
 
         # if name is specified, show the specified peer
@@ -266,7 +266,7 @@ class DatabaseManager:
         field_names = ["Name"]
 
         # exclude all columns that only have None's in simplified mode
-        if simplify is True:
+        if verbose is False:
             for peer in peers:
                 for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
                     if (
@@ -279,44 +279,36 @@ class DatabaseManager:
         else:
             field_names += INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES
 
-        # if the style is table
-        # print with prettytable
-        if style == "table":
-            try:
-                table = PrettyTable()
-                table.field_names = field_names
+        # create new rich table
+        table = Table(show_lines=True)
 
-                for peer in peers:
-                    table.add_row(
-                        [peer]
-                        + [
-                            database["peers"][peer].get(k)
-                            if not isinstance(database["peers"][peer].get(k), list)
-                            else ",".join(database["peers"][peer].get(k))
-                            for k in [i for i in table.field_names if i != "Name"]
-                        ]
-                    )
+        # create columns
+        for field in field_names:
+            table.add_column(
+                field,
+                style={
+                    "Name": "cyan",
+                    "Address": "red",
+                    "ListenPort": "yellow",
+                    "PrivateKey": "magenta",
+                    "Endpoint": "green",
+                }.get(field),
+            )
 
-                print(table)
-            except NameError:
-                print("PrettyTable is not installed", file=sys.stderr)
-                print("Displaying in table mode is not available", file=sys.stderr)
-                sys.exit(1)
+        # add rows to table
+        for peer in peers:
+            table.add_row(
+                peer,
+                *[
+                    str(database["peers"][peer].get(k))
+                    if not isinstance(database["peers"][peer].get(k), list)
+                    else ",".join(database["peers"][peer].get(k))
+                    for k in [i for i in field_names if i != "Name"]
+                ],
+            )
 
-        # if the style is text
-        # print in plaintext format
-        elif style == "text":
-            for peer in peers:
-                print(f"{'peer': <14}{peer}")
-                for key in field_names:
-                    print(
-                        f"{key: <14}{database['peers'][peer].get(key)}"
-                    ) if not isinstance(
-                        database["peers"][peer].get(key), list
-                    ) else print(
-                        f"{key: <14}{','.join(database['peers'][peer].get(key))}"
-                    )
-                print()
+        # print the constructed table in console
+        Console().print(table)
 
     def genconfig(self, Name: str, output: pathlib.Path):
         database = self.read_database()
