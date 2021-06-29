@@ -14,10 +14,9 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 
 ## Prerequisites
 
-- Python 3
-- prettytable (optional)
-
-It is highly recommended to install `prettytable` so you can get beautiful tabular display of peer information. If you choose not to install `prettytable`, only plaintext output will be available.
+- Python >= 3.6
+- cryptography
+- rich
 
 ## Installation (pip)
 
