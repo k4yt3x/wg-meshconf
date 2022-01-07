@@ -8,6 +8,7 @@ Last Modified: June 16, 2021
 """
 
 # local imports
+from logging import info
 from .wireguard import WireGuard
 
 # built-in imports
@@ -15,6 +16,7 @@ import copy
 import csv
 import pathlib
 import sys
+import itertools
 
 # third party imports
 from rich.console import Console
@@ -51,7 +53,7 @@ INTERFACE_OPTIONAL_ATTRIBUTES = [
 
 PEER_ATTRIBUTES = [
     "PublicKey",
-    "PresharedKey",
+    "PresharedKeys",
     "AllowedIPs",
     "Endpoint",
     "PersistentKeepalive",
@@ -70,6 +72,7 @@ KEY_TYPE = {
     "PersistentKeepalive": int,
     "FwMark": str,
     "PrivateKey": str,
+    "PresharedKeys": str,
     "DNS": str,
     "MTU": int,
     "Table": str,
@@ -87,7 +90,7 @@ class DatabaseManager:
         self.database_template = {"peers": {}}
         self.wireguard = WireGuard()
 
-    def init(self):
+    def init(self, with_psk: bool):
         """initialize an empty database file"""
         if not self.database_path.exists():
             with self.database_path.open(mode="w", encoding="utf-8", newline="") as database_file:
@@ -107,13 +110,34 @@ class DatabaseManager:
                         sys.exit(1)
 
             # automatically generate missing values
-            for peer in database["peers"]:
+            # some PSK calculations
+            if with_psk:
+                psk_needed=sum(range(len(database["peers"])))
+                for p in database["peers"]:
+                    if database["peers"][p]["PresharedKeys"]:
+                        psk_needed-=len(database["peers"][p]["PresharedKeys"].split(","))
+                additional_keys=[]
+                for _ in range(psk_needed):
+                    additional_keys.append(self.wireguard.genkey())
+
+            for counter,peer in enumerate(database["peers"]):
                 if database["peers"][peer].get("ListenPort") is None:
                     database["peers"][peer]["ListenPort"] = 51820
 
                 if database["peers"][peer].get("PrivateKey") is None:
                     privatekey = self.wireguard.genkey()
                     database["peers"][peer]["PrivateKey"] = privatekey
+
+                # fill up with additonal PSKS
+                if with_psk:
+                    peer_needed=( len(database["peers"]) - 1 - counter )
+                    presharedkeys=[]
+                    if database["peers"][peer]["PresharedKeys"] is not None:
+                        presharedkeys.extend(database["peers"][peer]["PresharedKeys"].split(","))
+                    for _ in range(peer_needed - len(presharedkeys)):
+                        if additional_keys:
+                            presharedkeys.append(additional_keys.pop())
+                    database["peers"][peer]["PresharedKeys"] = presharedkeys
             self.write_database(database)
 
     def read_database(self):
@@ -177,6 +201,7 @@ class DatabaseManager:
         PersistentKeepalive: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
+        PresharedKeys: str = None,
         DNS: str = None,
         MTU: int = None,
         Table: str = None,
@@ -215,6 +240,7 @@ class DatabaseManager:
         PersistentKeepalive: int = None,
         FwMark: str = None,
         PrivateKey: str = None,
+        PresharedKeys: str = None,
         DNS: str = None,
         MTU: int = None,
         Table: str = None,
@@ -310,7 +336,29 @@ class DatabaseManager:
         # print the constructed table in console
         Console().print(table)
 
-    def genconfig(self, Name: str, output: pathlib.Path):
+    def calculate_psks(self, peers, database):
+        inform=0
+        psk_tuples=[]
+        psk_keys=[]
+        combinations = list(itertools.combinations(peers,r=2))
+        for p in peers:
+            if database["peers"][p]["PresharedKeys"] is not None:
+                psk_keys.extend(database["peers"][p]["PresharedKeys"].split(","))
+        # for "static" behaviour, the first key must used first (.pop(0))
+        # reverse to use pop() instead pop(0)
+        psk_keys.reverse()
+        for combination in combinations:
+            if psk_keys:
+                psk_tuple=combination+(psk_keys.pop(),)
+            else:
+                inform +=1
+                psk_tuple=combination+(self.wireguard.genkey(),)
+            psk_tuples.append(psk_tuple)
+        if inform > 0:
+            print(f'{inform} PSKs generated. They will change every run.\nTo have an more static environment, please run "wg-meshconf --with-psk init" again.')
+        return psk_tuples
+
+    def genconfig(self, Name: str, output: pathlib.Path, with_psk: bool):
         database = self.read_database()
 
         # check if peer ID is specified
@@ -331,7 +379,8 @@ class DatabaseManager:
             print(f"Creating output directory: {output}", file=sys.stderr)
             output.mkdir(exist_ok=True)
 
-        # for every peer in the database
+        if with_psk:
+            psk_tuples = self.calculate_psks(peers,database)
         for peer in peers:
             with (output / f"{peer}.conf").open("w") as config:
                 config.write("[Interface]\n")
@@ -384,3 +433,8 @@ class DatabaseManager:
                             config.write(
                                 "{} = {}\n".format(key, database["peers"][p][key])
                             )
+
+                    if with_psk:
+                        for psk_tuple in [x for x in psk_tuples if peer in x]:
+                            if p in psk_tuple:
+                                config.write(f'PresharedKey = {psk_tuple[2]}\n')

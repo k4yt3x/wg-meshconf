@@ -34,6 +34,12 @@ def parse_arguments():
         default=pathlib.Path("database.csv"),
     )
 
+    parser.add_argument(
+        "--with-psk",
+        help="generate PSKs for each connection",
+        action="store_true"
+    )
+
     # add subparsers for commands
     subparsers = parser.add_subparsers(dest="command")
 
@@ -51,6 +57,7 @@ def parse_arguments():
         "--allowedips", help="additional allowed IP addresses", action="append"
     )
     addpeer.add_argument("--privatekey", help="private key of server interface")
+    addpeer.add_argument("--presharedkeys", help="preshared keys for connection to other peers")
     addpeer.add_argument("--listenport", help="port to listen on", default=51820)
     addpeer.add_argument(
         "--persistentkeepalive", help="set persistent keepalive interval"
@@ -79,6 +86,7 @@ def parse_arguments():
         "--allowedips", help="additional allowed IP addresses", action="append"
     )
     updatepeer.add_argument("--privatekey", help="private key of server interface")
+    updatepeer.add_argument("--presharedkeys", help="preshared keys for connection to other peers")
     updatepeer.add_argument("--listenport", help="port to listen on")
     updatepeer.add_argument(
         "--persistentkeepalive", help="set persistent keepalive interval"
@@ -131,6 +139,11 @@ def parse_arguments():
         type=pathlib.Path,
         default=pathlib.Path.cwd() / "output",
     )
+    #genconfig.add_argument(
+    #    "--with-psk",
+    #    help="generate PSKs for each connection",
+    #    action="store_true"
+    #)
 
     return parser.parse_args()
 
@@ -143,7 +156,7 @@ def main():
     database_manager = DatabaseManager(args.database)
 
     if args.command == "init":
-        database_manager.init()
+        database_manager.init(args.with_psk)
 
     elif args.command == "addpeer":
         database_manager.addpeer(
@@ -155,6 +168,7 @@ def main():
             args.persistentkeepalive,
             args.fwmark,
             args.privatekey,
+            args.presharedkeys,
             args.dns,
             args.mtu,
             args.table,
@@ -175,6 +189,7 @@ def main():
             args.persistentkeepalive,
             args.fwmark,
             args.privatekey,
+            args.presharedkeys,
             args.dns,
             args.mtu,
             args.table,
@@ -192,7 +207,7 @@ def main():
         database_manager.showpeers(args.name, args.verbose)
 
     elif args.command == "genconfig":
-        database_manager.genconfig(args.name, args.output)
+        database_manager.genconfig(args.name, args.output, args.with_psk)
 
     # if no commands are specified
     else:
