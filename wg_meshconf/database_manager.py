@@ -8,7 +8,6 @@ Last Modified: June 16, 2021
 """
 
 # local imports
-from logging import info
 from .wireguard import WireGuard
 
 # built-in imports
