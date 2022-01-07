@@ -139,11 +139,6 @@ def parse_arguments():
         type=pathlib.Path,
         default=pathlib.Path.cwd() / "output",
     )
-    #genconfig.add_argument(
-    #    "--with-psk",
-    #    help="generate PSKs for each connection",
-    #    action="store_true"
-    #)
 
     return parser.parse_args()
 
