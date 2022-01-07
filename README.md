@@ -88,10 +88,12 @@ You can then fill in the peers' information. **You will need to fill in at least
 ![image](https://user-images.githubusercontent.com/21986859/120081082-2fdec000-c0ab-11eb-90ad-0993a0557e1e.png)
 
 
-Once you're done, save the file and execute the `init` command again to automatically generate the rest of the needed information such as peer private keys.
+Once you're done, save the file and execute the `init` command again to automatically generate the rest of the needed information such as peer private keys. Run wg-meshconf with additional `--with-psk` to also fill up enough preshared keys to have an more static environment.
 
 ```shell
 wg-meshconf init
+# OR
+wg-meshconf --with-psk init
 ```
 
 If you check the file again, you'll see the necessary fields getting automatically filed in.
@@ -122,7 +124,7 @@ After adding all the peers into the database, you can verify that they have all 
 
 Use the `genconfig` command to generate configuration files for all peers. You may also export configurations for only one peer by specifying the peer's name.
 
-The configuration files will be named after the peers' names. By default, all configuration files are exported into a subdirectory named `output`. You can change this by specifying output directory using the `-o` or the `--output` option.
+The configuration files will be named after the peers' names. By default, all configuration files are exported into a subdirectory named `output`. You can change this by specifying output directory using the `-o` or the `--output` option. You can also add the `--with-psk` option to add preshared keys. Please be aware, that they will change on every run of `genconfig` if the databse does not contain enouhg PSKs for every connection. Use `wg-meshconf --with-psk init` to fill up the databse for more static behaviour. 
 
 ![image](https://user-images.githubusercontent.com/21986859/99202483-352b8b80-27a7-11eb-8479-8749e945a81d.png)
 
