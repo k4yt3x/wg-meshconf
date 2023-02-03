@@ -2,41 +2,46 @@
 
 wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks. You can easily and quickly create WireGuard mesh networks using this tool.
 
-## Installation (Pip; Recommended)
+## Installation (PyPI)
 
-wg-meshconf is available on PyPI. You can install it with pip and run the program via the `wg-meshconf` command.
+**This is the recommended way to install wg-meshconf for regular users.** This installation method installs the newest release version of wg-meshconf and all of the required dependencies from PyPI.
 
 ```shell
 # installing the program with pip
-pip3 install --user -U wg-meshconf
+# note that Pip for Python3 might be named "pip3" on some systems
+pip install --user -U wg-meshconf
 
 # running the program
 wg-meshconf showpeers
 ```
 
-## Installation (Manual)
+You may now run the program by executing the `wg-meshconf` command.
 
-Alternatively, if you do not want to install the program into the system with pip, you can clone this repository using `git` or download the [master branch's ZIP file](https://github.com/k4yt3x/wg-meshconf/archive/master.zip).
+## Installation (GitHub)
+
+Alternatively, if you would like to install the program directly from source code, you can follow the steps below. If you would like to install directly from the Git repository:
+
+```shell
+# install the HEAD (latest) commit
+pip install 'wg-meshconf@git+https://github.com/k4yt3x/wg-meshconf.git'
+
+# install from a specific tag or commit
+pip install 'wg-meshconf@git+https://github.com/k4yt3x/wg-meshconf.git@2.5.1'
+pip install 'wg-meshconf@git+https://github.com/k4yt3x/wg-meshconf.git@aa16407'
+```
+
+You can also clone it and install it locally.
 
 ```shell
 # cloning the repository with git
 git clone https://github.com/k4yt3x/wg-meshconf.git
 
-# download the master branch's ZIP file
-wget https://github.com/k4yt3x/wg-meshconf/archive/master.zip
+# enter the directory
+cd wg-meshconf
 
-# decompress the ZIP file
-unzip wg-meshconf-master.zip
-```
-
-Then, you will need to install Python's dependencies.
-
-```shell
-# if you cloned this repository
-pip3 install --user -Ur wg-meshconf/wg_meshconf/requirements.txt
-
-# if you downloaded and decompressed the zip file
-pip3 install --user -Ur wg-meshconf-master/wg_meshconf/requirements.txt
+# install the program with Pip
+# Pip and PDM will take care of dependency installation
+pip install -U .
 ```
 
 ## Learn by an Example
