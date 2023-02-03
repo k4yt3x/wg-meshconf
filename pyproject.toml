@@ -1,11 +1,10 @@
 [project]
 name = "wg-meshconf"
-version = "2.5.0"
 description = "A tool that helps you to generate peer configuration files for WireGuard mesh networks"
 authors = [{name = "K4YT3X", email = "i@k4yt3x.com"}]
 dependencies = [
-    "cryptography>=39.0.0",
-    "rich>=13.3.1",
+    "cryptography>=35.0.0",
+    "rich>=12.0.0",
 ]
 requires-python = ">=3.7"
 readme = "README.md"

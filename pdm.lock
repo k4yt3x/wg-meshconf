@@ -65,7 +65,7 @@ summary = "Backported and Experimental Type Hints for Python 3.7+"
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:7224bdd73676179cf4f150ca5b909dd1e0afba5d879cf764099652f229dfb57b"
+content_hash = "sha256:4d3e4351e642cc2a530ff2bedad1a230b1a8a5347d72486aeea37a29649e00bb"
 
 [metadata.files]
 "cffi 1.15.1" = [
