@@ -11,13 +11,11 @@ Licensed under the GNU General Public License Version 3 (GNU GPL v3),
 (C) 2018-2021 K4YT3X
 """
 
-# local imports
-from .database_manager import DatabaseManager
-
-# built-in imports
 import argparse
 import pathlib
 import sys
+
+from .database_manager import DatabaseManager
 
 
 def parse_arguments():

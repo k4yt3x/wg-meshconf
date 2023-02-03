@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.1 (February 2, 2023)
+
+- Update the project to use PEP 518 and PEP 621
+
 ## 2.2.0 (January 26, 2021)
 
 - Implemented private/public key generation using native Python code
