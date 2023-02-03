@@ -1,3 +1,11 @@
+# PDM
+.pdm.toml
+__pypackages__/
+
+# Vim session file
+Session.vim
+
+# program data files
 *.csv
 wg_meshconf/output/
 wg-meshconf.odg
