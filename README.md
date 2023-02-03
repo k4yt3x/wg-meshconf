@@ -1,7 +1,5 @@
 # wg-meshconf
 
-## Introduction
-
 wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks. You can easily and quickly create WireGuard mesh networks using this tool.
 
 ## Installation (pip)
