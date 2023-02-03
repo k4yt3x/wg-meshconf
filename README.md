@@ -1,22 +1,8 @@
 # wg-meshconf
 
-## On the Horizon: `wg-dynamic`
-
-`wg-dynamic` is a tool designed officially by the WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic).
-
-## Version 2
-
-Say hello to version 2! This version is a complete rewrite of the pervious versions. Detailed information can be found in the [changelog](CHANGELOG.md). Please tell me if you like or hate this new design by posting an issue.
-
 ## Introduction
 
 wg-meshconf is a tool that will help you to generate peer configuration files for WireGuard mesh networks. You can easily and quickly create WireGuard mesh networks using this tool.
-
-## Prerequisites
-
-- Python >= 3.6
-- cryptography
-- rich
 
 ## Installation (pip)
 
@@ -86,7 +72,6 @@ Open the database CSV file with an editor like Excel or LibreOffice Calc. You sh
 You can then fill in the peers' information. **You will need to fill in at least the peers' `Name`, `Address`, and `Endpoint` values.** These values cannot be automatically generated.
 
 ![image](https://user-images.githubusercontent.com/21986859/120081082-2fdec000-c0ab-11eb-90ad-0993a0557e1e.png)
-
 
 Once you're done, save the file and execute the `init` command again to automatically generate the rest of the needed information such as peer private keys.
 
@@ -241,16 +226,21 @@ optional arguments:
 
 ## License
 
-Licensed under the GNU General Public License Version 3 (GNU GPL v3)
-
-https://www.gnu.org/licenses/gpl-3.0.txt
+This project is licensed under the [GNU General Public License Version 3 (GNU GPL v3)](https://www.gnu.org/licenses/gpl-3.0.txt)\
+Copyright (c) 2018-2023 K4YT3X and contributors.
 
 ![GPLv3 Icon](https://www.gnu.org/graphics/gplv3-127x51.png)
 
-(C) 2018-2021 K4YT3X
+This project includes or dependson the following software and projects:
 
-## Credits
+| **Project**                                          | **License** |
+| ---------------------------------------------------- | ----------- |
+| [Rich](https://github.com/Textualize/rich)           | MIT License |
+| [WireGuard](https://git.zx2c4.com/wireguard)         | MIT License |
+| [cryptography](https://github.com/pyca/cryptography) | BSD License |
 
-This project relies on the following software and projects.
+## Related Project: `wg-dynamic`
 
-- [WireGuard](https://www.wireguard.com/)
+`wg-dynamic` is a tool designed officially by the WireGuard developing team. This new utility will provide a convenient way of configuring networks dynamically, where mesh network being one of the them. If you're interested, check it out at [wg-dynamic@github](https://github.com/WireGuard/wg-dynamic) or [wg-dynamic@official repository](https://git.zx2c4.com/wg-dynamic). You might also want to read this project's [idea page](https://github.com/WireGuard/wg-dynamic/blob/master/docs/idea.md).
+
+This section used to be on the top of the page, but has been moved since there has been no new commits observed in this project since 2019.
