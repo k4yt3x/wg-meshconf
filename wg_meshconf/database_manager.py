@@ -45,17 +45,24 @@ INTERFACE_OPTIONAL_ATTRIBUTES = [
     "SaveConfig",
 ]
 
-PEER_ATTRIBUTES = [
+PEER_ATTRIBUTES_REMOTE = [
     "PublicKey",
     "PresharedKey",
     "AllowedIPs",
     "Endpoint",
+]
+
+PEER_OPTIONAL_ATTRIBUTES_REMOTE = []
+
+PEER_ATTRIBUTES_LOCAL = [
     "PersistentKeepalive",
 ]
 
-PEER_OPTIONAL_ATTRIBUTES = [
+PEER_OPTIONAL_ATTRIBUTES_LOCAL = [
     "PersistentKeepalive",
 ]
+
+ALL_ATTRIBUTES = INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES_REMOTE + PEER_ATTRIBUTES_LOCAL
 
 KEY_TYPE = {
     "Name": str,
@@ -199,7 +206,7 @@ class DatabaseManager:
             privatekey = self.wireguard.genkey()
             database["peers"][Name]["PrivateKey"] = privatekey
 
-        for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
+        for key in ALL_ATTRIBUTES:
             if locals().get(key) is not None:
                 database["peers"][Name][key] = locals().get(key)
 
@@ -230,7 +237,7 @@ class DatabaseManager:
             print(f"Peer with name {Name} does not exist")
             return
 
-        for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
+        for key in ALL_ATTRIBUTES:
             if locals().get(key) is not None:
                 database["peers"][Name][key] = locals().get(key)
 
@@ -268,7 +275,7 @@ class DatabaseManager:
         # exclude all columns that only have None's in simplified mode
         if verbose is False:
             for peer in peers:
-                for key in INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES:
+                for key in ALL_ATTRIBUTES:
                     if (
                         database["peers"][peer].get(key) is not None
                         and key not in field_names
@@ -277,7 +284,7 @@ class DatabaseManager:
 
         # include all columns by default
         else:
-            field_names += INTERFACE_ATTRIBUTES + PEER_ATTRIBUTES
+            field_names += ALL_ATTRIBUTES
 
         # create new rich table
         table = Table(show_lines=True)
@@ -333,54 +340,51 @@ class DatabaseManager:
 
         # for every peer in the database
         for peer in peers:
+            local_peer = database["peers"][peer]
+
             with (output / f"{peer}.conf").open("w") as config:
                 config.write("[Interface]\n")
                 config.write("# Name: {}\n".format(peer))
-                config.write(
-                    "Address = {}\n".format(
-                        ", ".join(database["peers"][peer]["Address"])
-                    )
-                )
-                config.write(
-                    "PrivateKey = {}\n".format(database["peers"][peer]["PrivateKey"])
-                )
+                config.write("Address = {}\n".format(", ".join(local_peer["Address"])))
+                config.write("PrivateKey = {}\n".format(local_peer["PrivateKey"]))
 
                 for key in INTERFACE_OPTIONAL_ATTRIBUTES:
-                    if database["peers"][peer].get(key) is not None:
-                        config.write(
-                            "{} = {}\n".format(key, database["peers"][peer][key])
-                        )
+                    if local_peer.get(key) is not None:
+                        config.write("{} = {}\n".format(key, local_peer[key]))
 
                 # generate [Peer] sections for all other peers
                 for p in [i for i in database["peers"] if i != peer]:
+                    remote_peer = database["peers"][p]
+
                     config.write("\n[Peer]\n")
                     config.write("# Name: {}\n".format(p))
                     config.write(
                         "PublicKey = {}\n".format(
-                            self.wireguard.pubkey(database["peers"][p]["PrivateKey"])
+                            self.wireguard.pubkey(remote_peer["PrivateKey"])
                         )
                     )
 
-                    if database["peers"][p].get("Endpoint") is not None:
+                    if remote_peer.get("Endpoint") is not None:
                         config.write(
                             "Endpoint = {}:{}\n".format(
-                                database["peers"][p]["Endpoint"],
-                                database["peers"][p]["ListenPort"],
+                                remote_peer["Endpoint"],
+                                remote_peer["ListenPort"],
                             )
                         )
 
-                    if database["peers"][p].get("Address") is not None:
-                        if database["peers"][p].get("AllowedIPs") is not None:
+                    if remote_peer.get("Address") is not None:
+                        if remote_peer.get("AllowedIPs") is not None:
                             allowed_ips = ", ".join(
-                                database["peers"][p]["Address"]
-                                + database["peers"][p]["AllowedIPs"]
+                                remote_peer["Address"] + remote_peer["AllowedIPs"]
                             )
                         else:
-                            allowed_ips = ", ".join(database["peers"][p]["Address"])
+                            allowed_ips = ", ".join(remote_peer["Address"])
                         config.write("AllowedIPs = {}\n".format(allowed_ips))
 
-                    for key in PEER_OPTIONAL_ATTRIBUTES:
-                        if database["peers"][p].get(key) is not None:
-                            config.write(
-                                "{} = {}\n".format(key, database["peers"][p][key])
-                            )
+                    for key in PEER_OPTIONAL_ATTRIBUTES_REMOTE:
+                        if remote_peer.get(key) is not None:
+                            config.write("{} = {}\n".format(key, remote_peer[key]))
+
+                    for key in PEER_OPTIONAL_ATTRIBUTES_LOCAL:
+                        if local_peer.get(key) is not None:
+                            config.write("{} = {}\n".format(key, local_peer[key]))
