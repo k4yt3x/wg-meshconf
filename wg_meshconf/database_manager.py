@@ -7,20 +7,16 @@ Date Created: July 19, 2020
 Last Modified: June 16, 2021
 """
 
-# local imports
-from .wireguard import WireGuard
-
-# built-in imports
 import copy
 import csv
 import pathlib
 import sys
 import itertools
 
-# third party imports
 from rich.console import Console
 from rich.table import Table
 
+from .wireguard import WireGuard
 
 INTERFACE_ATTRIBUTES = [
     "Address",
@@ -92,7 +88,9 @@ class DatabaseManager:
     def init(self, with_psk: bool):
         """initialize an empty database file"""
         if not self.database_path.exists():
-            with self.database_path.open(mode="w", encoding="utf-8", newline="") as database_file:
+            with self.database_path.open(
+                mode="w", encoding="utf-8", newline=""
+            ) as database_file:
                 writer = csv.DictWriter(
                     database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
                 )
@@ -179,7 +177,9 @@ class DatabaseManager:
             data (dict): content of database
         """
 
-        with self.database_path.open(mode="w", encoding="utf-8", newline="") as database_file:
+        with self.database_path.open(
+            mode="w", encoding="utf-8", newline=""
+        ) as database_file:
             writer = csv.DictWriter(
                 database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
             )

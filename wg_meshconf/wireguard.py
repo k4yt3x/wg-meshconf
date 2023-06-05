@@ -10,10 +10,10 @@ The WireGuard class implements some of wireguard-tools' cryptographic
     functions such as generating WireGuard private and public keys.
 """
 
-# built-in imports
+import base64
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
-import base64
 
 
 class WireGuard:

@@ -1,3 +1,28 @@
+[project]
+name = "wg-meshconf"
+description = "A tool that helps you to generate peer configuration files for WireGuard mesh networks"
+authors = [{name = "K4YT3X", email = "i@k4yt3x.com"}]
+dependencies = [
+    "cryptography>=35.0.0",
+    "rich>=12.0.0",
+]
+requires-python = ">=3.7"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/k4yt3x/wg-meshconf"
+
+[project.scripts]
+wg-meshconf = "wg_meshconf:main"
+
+[tool.isort]
+profile = "black"
+
+[tool.pdm]
+version = { from = "wg_meshconf/__init__.py" }
+
 [build-system]
-requires = ["setuptools>=44", "wheel", "setuptools_scm[toml]>=3.4.3"]
-build-backend = "setuptools.build_meta"
+requires = ["pdm-pep517>=1.0"]
+build-backend = "pdm.pep517.api"
