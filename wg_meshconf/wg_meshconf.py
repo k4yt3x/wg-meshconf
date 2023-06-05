@@ -19,7 +19,6 @@ import argparse
 import pathlib
 import sys
 
-
 def parse_arguments():
     """parse CLI arguments"""
     parser = argparse.ArgumentParser(
