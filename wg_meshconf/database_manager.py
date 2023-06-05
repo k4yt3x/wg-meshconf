@@ -106,8 +106,7 @@ class DatabaseManager:
                         print(f"The value of {key} cannot be automatically generated")
                         sys.exit(1)
 
-            # automatically generate missing values
-            # some PSK calculations
+            # global psk informations
             if with_psk:
                 existing_keys=[]
                 peers = list(database['peers'])
@@ -126,21 +125,23 @@ class DatabaseManager:
                     peer_existing_keys=database["peers"][peer]["PresharedKeys"].split(",")
                     existing_keys.extend(peer_existing_keys)
 
-                for psk in psk_tuples:
-                    if peer in psk:
-                        psk_to_use=""
-                        for key in existing_keys:
-                            existing_key_tuple=key.split(":")
-                            if (psk[0] in key) and (psk[1] in key):
-                                psk_to_use=existing_key_tuple[2]
+                # peer related psk stuff 
+                if with_psk:
+                    for psk in psk_tuples:
+                        if peer in psk:
+                            psk_to_use=""
+                            for key in existing_keys:
+                                existing_key_tuple=key.split(":")
+                                if (psk[0] in key) and (psk[1] in key):
+                                    psk_to_use=existing_key_tuple[2]
 
-                        if not psk_to_use:
-                            psk_to_use=self.wireguard.genkey()
-                            new_entry=f"{psk[0]}:{psk[1]}:{psk_to_use}"
-                            existing_keys.append(new_entry)
-                        psk_string=f"{psk[0]}:{psk[1]}:{psk_to_use}"
-                        presharedkeys.append(psk_string)
-                        database["peers"][peer]["PresharedKeys"] = str.join(",",presharedkeys)
+                            if not psk_to_use:
+                                psk_to_use=self.wireguard.genkey()
+                                new_entry=f"{psk[0]}:{psk[1]}:{psk_to_use}"
+                                existing_keys.append(new_entry)
+                            psk_string=f"{psk[0]}:{psk[1]}:{psk_to_use}"
+                            presharedkeys.append(psk_string)
+                            database["peers"][peer]["PresharedKeys"] = str.join(",",presharedkeys)
             self.write_database(database)
 
     def read_database(self):
