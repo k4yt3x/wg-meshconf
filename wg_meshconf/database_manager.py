@@ -7,9 +7,12 @@ Date Created: July 19, 2020
 Last Modified: June 16, 2021
 """
 
-import copy, csv
-import pathlib, sys
-import itertools, json
+import csv
+import copy
+import itertools
+import json
+import pathlib
+import sys
 
 from rich.console import Console
 from rich.table import Table
