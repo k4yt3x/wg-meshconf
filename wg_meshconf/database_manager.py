@@ -7,10 +7,9 @@ Date Created: July 19, 2020
 Last Modified: June 16, 2021
 """
 
-import copy
-import csv
-import pathlib
-import sys
+import copy, csv
+import pathlib, sys
+import itertools, json
 
 from rich.console import Console
 from rich.table import Table
@@ -331,6 +330,11 @@ class DatabaseManager:
             print(f"Creating output directory: {output}", file=sys.stderr)
             output.mkdir(exist_ok=True)
 
+        # generate pre-shared keys for quantum resistance
+        preshared_keys = {}
+        for _combo_pair in itertools.combinations(peers, 2):
+            preshared_keys[json.dumps(sorted(list(_combo_pair)))] = self.wireguard.genpsk()
+
         # for every peer in the database
         for peer in peers:
             with (output / f"{peer}.conf").open("w") as config:
@@ -358,6 +362,13 @@ class DatabaseManager:
                     config.write(
                         "PublicKey = {}\n".format(
                             self.wireguard.pubkey(database["peers"][p]["PrivateKey"])
+                        )
+                    )
+
+                    # write pre-shared keys
+                    config.write(
+                        "PresharedKey = {}\n".format(
+                            preshared_keys[json.dumps(sorted(list({peer, p})))]
                         )
                     )
 
