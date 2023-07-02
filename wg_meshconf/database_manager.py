@@ -7,8 +7,8 @@ Date Created: July 19, 2020
 Last Modified: June 16, 2021
 """
 
-import csv
 import copy
+import csv
 import itertools
 import json
 import pathlib
