@@ -309,7 +309,7 @@ class DatabaseManager:
         # print the constructed table in console
         Console().print(table)
 
-    def genconfig(self, Name: str, output: pathlib.Path):
+    def genconfig(self, Name: str, output: pathlib.Path, psk: bool):
         database = self.read_database()
 
         # check if peer ID is specified
@@ -330,10 +330,11 @@ class DatabaseManager:
             print(f"Creating output directory: {output}", file=sys.stderr)
             output.mkdir(exist_ok=True)
 
-        # generate pre-shared keys for quantum resistance
-        preshared_keys = {}
-        for _combo_pair in itertools.combinations(peers, 2):
-            preshared_keys[json.dumps(sorted(list(_combo_pair)))] = self.wireguard.genpsk()
+        # optionally generate pre-shared keys for quantum secrecy
+        if psk:
+            preshared_keys = {}
+            for _combo_pair in itertools.combinations(peers, 2):
+                preshared_keys[json.dumps(sorted(list(_combo_pair)))] = self.wireguard.genpsk()
 
         # for every peer in the database
         for peer in peers:
@@ -365,12 +366,13 @@ class DatabaseManager:
                         )
                     )
 
-                    # write pre-shared keys
-                    config.write(
-                        "PresharedKey = {}\n".format(
-                            preshared_keys[json.dumps(sorted(list({peer, p})))]
+                    # optionally write pre-shared keys
+                    if psk:
+                        config.write(
+                            "PresharedKey = {}\n".format(
+                                preshared_keys[json.dumps(sorted(list({peer, p})))]
+                            )
                         )
-                    )
 
                     if database["peers"][p].get("Endpoint") is not None:
                         config.write(
