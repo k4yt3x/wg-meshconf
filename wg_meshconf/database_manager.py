@@ -334,7 +334,9 @@ class DatabaseManager:
         if psk:
             preshared_keys = {}
             for _combo_pair in itertools.combinations(peers, 2):
-                preshared_keys[json.dumps(sorted(list(_combo_pair)))] = self.wireguard.genpsk()
+                preshared_keys[
+                    json.dumps(sorted(list(_combo_pair)))
+                ] = self.wireguard.genpsk()
 
         # for every peer in the database
         for peer in peers:

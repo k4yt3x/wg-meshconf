@@ -134,7 +134,7 @@ def parse_arguments():
         "--psk",
         help="generate pre-shared key configuration",
         default=False,
-        action='store_true',
+        action="store_true",
     )
 
     return parser.parse_args()
@@ -142,7 +142,6 @@ def parse_arguments():
 
 # if the file is not being imported
 def main():
-
     args = parse_arguments()
 
     database_manager = DatabaseManager(args.database)
