@@ -88,9 +88,11 @@ Once you're done, save the file and execute the `init` command again to automati
 wg-meshconf init
 ```
 
-If you check the file again, you'll see the necessary fields getting automatically filed in.
+If you check the file again, you'll see the necessary fields getting automatically filled in.
 
 ![image](https://user-images.githubusercontent.com/21986859/120081172-a2e83680-c0ab-11eb-963d-b6810a6580a3.png)
+
+When adding multiple `AllowedIPs` to your `database` spreadsheet column, include a comma between the ip addresses or ranges (e.g `192.168.0.0/24, 10.0.0.0/24`)
 
 #### Method B: With Terminal
 
@@ -187,7 +189,6 @@ Database files are essentially just CSV files (it was JSON before version 2.4.0)
 "canada1","10.3.0.1/16","canada1.com","","51820","","","2D34jpbTsU+KeBqfItTEbL5m7nYcBomWWJGTYCT6eko=","","","","","","","",""
 "shanghai1","10.4.0.1/16","shanghai1.com","","51820","","","CGyR7goj/uGH3TQHgVknpb9ZBR+/yMfkve+kVNGBYlg=","","","","","","","",""
 ```
-
 ## Detailed Usages
 
 You may refer to the program's help page for usages. Use the `-h` switch or the `--help` switch to print the help page.
