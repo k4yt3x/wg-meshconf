@@ -11,10 +11,13 @@ wg-meshconf is a tool that will help you to generate peer configuration files fo
 # note that Pip for Python3 might be named "pip3" on some systems
 pip install --user -U wg-meshconf
 
+# alternatively install as an isolated app with 'pipx'
+# ensure ~/.local/bin is in your $PATH (e.g 'export PATH=$PATH:~/.local/bin' in your ~/.bashrc)
+pipx install wg-meshconf
+
 # running the program
 wg-meshconf showpeers
 ```
-
 You may now run the program by executing the `wg-meshconf` command.
 
 ## Installation (GitHub)
@@ -42,6 +45,9 @@ cd wg-meshconf
 # install the program with Pip
 # Pip and PDM will take care of dependency installation
 pip install -U .
+
+# alternatively install as an isolated app with 'pipx'
+pipx install .
 ```
 
 ## Learn by an Example
