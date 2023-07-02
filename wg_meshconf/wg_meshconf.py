@@ -104,7 +104,7 @@ def parse_arguments():
     showpeers = subparsers.add_parser("showpeers")
     showpeers.add_argument(
         "name",
-        help="Name of the peer to query",
+        help="name of the peer to query",
         nargs="?",
     )
     showpeers.add_argument(
@@ -118,7 +118,7 @@ def parse_arguments():
     genconfig = subparsers.add_parser("genconfig")
     genconfig.add_argument(
         "name",
-        help="Name of the peer to generate configuration for, \
+        help="name of the peer to generate configuration for, \
             configuration for all peers are generated if omitted",
         nargs="?",
     )
@@ -129,13 +129,19 @@ def parse_arguments():
         type=pathlib.Path,
         default=pathlib.Path.cwd() / "output",
     )
+    genconfig.add_argument(
+        "-p",
+        "--psk",
+        help="generate pre-shared key configuration",
+        default=False,
+        action="store_true",
+    )
 
     return parser.parse_args()
 
 
 # if the file is not being imported
 def main():
-
     args = parse_arguments()
 
     database_manager = DatabaseManager(args.database)
@@ -190,7 +196,7 @@ def main():
         database_manager.showpeers(args.name, args.verbose)
 
     elif args.command == "genconfig":
-        database_manager.genconfig(args.name, args.output)
+        database_manager.genconfig(args.name, args.output, args.psk)
 
     # if no commands are specified
     else:

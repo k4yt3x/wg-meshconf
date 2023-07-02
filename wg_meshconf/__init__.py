@@ -7,6 +7,6 @@ Date Created: May 21, 2021
 Last Modified: February 2, 2023
 """
 
-__version__ = "2.5.1"
+__version__ = "2.5.2"
 
 from .wg_meshconf import main
