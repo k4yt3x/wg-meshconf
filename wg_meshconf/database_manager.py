@@ -105,7 +105,7 @@ class DatabaseManager:
             database = self.read_database()
 
             # check values that cannot be generated automatically
-            for key in ["Address", "Endpoint"]:
+            for key in ["Address"]:
                 for peer in database["peers"]:
                     if database["peers"][peer].get(key) is None:
                         print(f"The value of {key} cannot be automatically generated")
@@ -341,6 +341,7 @@ class DatabaseManager:
         # for every peer in the database
         for peer in peers:
             local_peer = database["peers"][peer]
+            local_peer_endpoint = local_peer.get("Endpoint")
 
             with (output / f"{peer}.conf").open("w") as config:
                 config.write("[Interface]\n")
@@ -355,6 +356,16 @@ class DatabaseManager:
                 # generate [Peer] sections for all other peers
                 for p in [i for i in database["peers"] if i != peer]:
                     remote_peer = database["peers"][p]
+                    remote_peer_endpoint = remote_peer.get("Endpoint")
+
+                    peers_can_connect_directly = (
+                        remote_peer_endpoint is not None
+                        or local_peer_endpoint is not None
+                    )
+                    if not peers_can_connect_directly:
+                        # See https://github.com/pirate/wireguard-docs#how-public-relay-servers-work
+                        # In short: Only direct connections between clients should be configured.
+                        continue
 
                     config.write("\n[Peer]\n")
                     config.write("# Name: {}\n".format(p))
@@ -364,7 +375,7 @@ class DatabaseManager:
                         )
                     )
 
-                    if remote_peer.get("Endpoint") is not None:
+                    if remote_peer_endpoint is not None:
                         config.write(
                             "Endpoint = {}:{}\n".format(
                                 remote_peer["Endpoint"],
