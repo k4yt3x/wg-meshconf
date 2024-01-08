@@ -214,15 +214,16 @@ class DatabaseManager:
             for peer2 in database["peers"]:
                 if peer != peer2:
                     # Check if Address is unique
-                    if database["peers"][peer]["Address"] == databasse["peers"][peer2]["Address"]:
+                    if database["peers"][peer]["Address"] == database["peers"][peer2]["Address"]:
                         print(f"Address {database['peers'][peer]['Address']} already exists")
                         return
                     # Check if PrivateKey is unique
                     if database["peers"][peer]["PrivateKey"] == database["peers"][peer2]["PrivateKey"]:
                         print(f"PrivateKey {database['peers'][peer]['PrivateKey']} already exists")
                         return
-                    # Check if Endpoint and ListenPort are unique
-                    if database["peers"][peer]["Endpoint"] == database["peers"][peer2]["Endpoint"] \
+                    # Check if Endpoint and ListenPort are unique and exist
+                    if "Endpoint" in database["peers"][peer] and "Endpoint" in database["peers"][peer2] \
+                    and database["peers"][peer]["Endpoint"] == database["peers"][peer2]["Endpoint"] \
                     and database["peers"][peer]["ListenPort"] == database["peers"][peer2]["ListenPort"]:
                         print(f"Endpoint {database['peers'][peer]['Endpoint']} and ListenPort {database['peers'][peer]['ListenPort']} already exists")
                         return
