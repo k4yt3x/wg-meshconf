@@ -7,6 +7,7 @@ Date Created: July 19, 2020
 Last Modified: June 16, 2021
 """
 
+import codecs
 import copy
 import csv
 import pathlib
@@ -16,6 +17,30 @@ from rich.console import Console
 from rich.table import Table
 
 from .wireguard import WireGuard
+
+# database files are written as UTF-8 with a BOM so Excel/similar treat it correctly
+DATABASE_ENCODING = "utf-8-sig"
+DEFAULT_DELIMITER = ","
+
+
+def detect_encoding(path: pathlib.Path) -> str:
+    """detect the encoding of a database file from its BOM"""
+    with path.open("rb") as raw_file:
+        prefix = raw_file.read(4)
+
+    if prefix.startswith((codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
+        return "utf-32"
+    if prefix.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+        return "utf-16"
+    return "utf-8-sig"
+
+
+def detect_delimiter(header: str) -> str:
+    """detect the delimiter used by an Excel/similar exported CSV"""
+    counts = {delimiter: header.count(delimiter) for delimiter in (",", ";", "\t")}
+    delimiter, count = max(counts.items(), key=lambda item: item[1])
+    return delimiter if count else DEFAULT_DELIMITER
+
 
 INTERFACE_ATTRIBUTES = [
     "Address",
@@ -89,12 +114,13 @@ class DatabaseManager:
         self.database_path = database_path
         self.database_template = {"peers": {}}
         self.wireguard = WireGuard()
+        self.delimiter = DEFAULT_DELIMITER
 
     def init(self):
         """initialize an empty database file"""
         if not self.database_path.exists():
             with self.database_path.open(
-                mode="w", encoding="utf-8", newline=""
+                mode="w", encoding=DATABASE_ENCODING, newline=""
             ) as database_file:
                 writer = csv.DictWriter(
                     database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
@@ -132,19 +158,47 @@ class DatabaseManager:
 
         database = copy.deepcopy(self.database_template)
 
-        with self.database_path.open(mode="r", encoding="utf-8") as database_file:
-            peers = csv.DictReader(database_file)
+        with self.database_path.open(
+            mode="r", encoding=detect_encoding(self.database_path), newline=""
+        ) as database_file:
+            self.delimiter = detect_delimiter(database_file.readline())
+            database_file.seek(0)
+            peers = csv.DictReader(database_file, delimiter=self.delimiter)
             for peer in peers:
-                for key in peer:
-                    if peer[key] == "":
-                        peer[key] = None
-                    elif KEY_TYPE[key] == list:
-                        peer[key] = peer[key].split(",")
-                    elif KEY_TYPE[key] == int:
-                        peer[key] = int(peer[key])
-                    elif KEY_TYPE[key] == bool:
-                        peer[key] = peer[key].lower() == "true"
-                database["peers"][peer.pop("Name")] = peer
+                # normalize header names because Excel/similar often prepend a BOM to the
+                # first column and may add blank or unknown extra columns
+                row = {}
+                for key, value in peer.items():
+                    if key is None:
+                        continue
+                    key = key.lstrip("\ufeff").strip()
+                    if key not in KEY_TYPE:
+                        continue
+                    row[key] = value
+
+                name = row.get("Name")
+                if name is None or name.strip() == "":
+                    continue
+                name = name.strip()
+
+                for key in row:
+                    value = row[key]
+
+                    if value is None or value.strip() == "":
+                        row[key] = None
+                    elif KEY_TYPE[key] is list:
+                        row[key] = [
+                            item.strip() for item in value.split(",") if item.strip()
+                        ]
+                    elif KEY_TYPE[key] is int:
+                        row[key] = int(value.strip())
+                    elif KEY_TYPE[key] is bool:
+                        row[key] = value.strip().lower() in ("true", "1", "yes", "y")
+                    else:
+                        row[key] = value.strip()
+
+                row.pop("Name")
+                database["peers"][name] = row
 
         return database
 
@@ -156,23 +210,29 @@ class DatabaseManager:
         """
 
         with self.database_path.open(
-            mode="w", encoding="utf-8", newline=""
+            mode="w", encoding=DATABASE_ENCODING, newline=""
         ) as database_file:
             writer = csv.DictWriter(
-                database_file, KEY_TYPE.keys(), quoting=csv.QUOTE_ALL
+                database_file,
+                KEY_TYPE.keys(),
+                quoting=csv.QUOTE_ALL,
+                delimiter=self.delimiter,
             )
             writer.writeheader()
             data = copy.deepcopy(data)
             for peer in data["peers"]:
                 data["peers"][peer]["Name"] = peer
-                for key in data["peers"][peer]:
-                    if isinstance(data["peers"][peer][key], list):
-                        data["peers"][peer][key] = ",".join(data["peers"][peer][key])
-                    elif isinstance(data["peers"][peer][key], int):
-                        data["peers"][peer][key] = str(data["peers"][peer][key])
-                    elif isinstance(data["peers"][peer][key], bool):
-                        data["peers"][peer][key] = str(data["peers"][peer][key])
-                writer.writerow(data["peers"][peer])
+                row = {}
+                for key, value in data["peers"][peer].items():
+                    # ignore attributes that are not part of the schema
+                    if key not in KEY_TYPE:
+                        continue
+                    if isinstance(value, list):
+                        value = ",".join(value)
+                    elif isinstance(value, (int, bool)):
+                        value = str(value)
+                    row[key] = value
+                writer.writerow(row)
 
     def addpeer(
         self,
@@ -342,7 +402,7 @@ class DatabaseManager:
         for peer in peers:
             local_peer = database["peers"][peer]
 
-            with (output / f"{peer}.conf").open("w") as config:
+            with (output / f"{peer}.conf").open("w", encoding="utf-8") as config:
                 config.write("[Interface]\n")
                 config.write("# Name: {}\n".format(peer))
                 config.write("Address = {}\n".format(", ".join(local_peer["Address"])))
